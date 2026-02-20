@@ -1,0 +1,104 @@
+:root {
+  --forest: #064420;
+  --leaf: #81c784;
+  --white: #ffffff;
+  --muted: #6b6b6b;
+  --card-border: #c8e6c9;
+}
+body {
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  margin: 20px;
+  background: #f6fff6;
+  color: #122;
+}
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.back {
+  background: var(--forest);
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+h2 {
+  color: var(--forest);
+  margin: 8px 0 14px 0;
+}
+.info {
+  background: #fff;
+  border: 1px solid var(--card-border);
+  padding: 14px;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(2, 52, 19, 0.03);
+  margin-bottom: 12px;
+}
+form {
+  background: #fff;
+  border: 1px solid var(--card-border);
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(2, 52, 19, 0.03);
+}
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: 600;
+  color: var(--forest);
+}
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+button[type="submit"] {
+  margin-top: 12px;
+  background: var(--leaf);
+  color: #083a2a;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.small {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* Farmer info card */
+.farmer-info {
+  display: flex;
+  align-items: center;
+  background: #d4edda;
+  border: 2px solid #28a745;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 25px;
+  color: #155724;
+  gap: 15px;
+}
+.farmer-info img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #28a745;
+}
+.farmer-info .details {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+}
+.farmer-info .details span {
+  margin: 2px 0;
+}

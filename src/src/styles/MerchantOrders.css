@@ -1,0 +1,79 @@
+.merchant-orders-page {
+  padding: 20px;
+  font-family: "Poppins", sans-serif;
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.btn-back {
+  padding: 6px 12px;
+  background-color: #4a7a2f;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.orders-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.orders-filters input,
+.orders-filters select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.orders-table-wrapper {
+  overflow-x: auto;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.status-badge.pending { background-color: #f0ad4e; }
+.status-badge.completed { background-color: #5cb85c; }
+.status-badge.other { background-color: #6c757d; }
+
+.btn-primary {
+  padding: 4px 8px;
+  background-color: #4a7a2f;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #3f6626;
+}
+
+.empty-msg {
+  padding: 20px;
+  text-align: center;
+  color: #777;
+}
