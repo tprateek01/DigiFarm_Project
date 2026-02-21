@@ -1,0 +1,48 @@
+/* Full page center alignment */
+.hero {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f4f4;
+}
+
+/* Green box */
+.hero1 {
+  background-color: #2e7d32; /* Green box */
+  padding: 40px 60px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: center;
+}
+
+/* Buttons */
+.actionbtn {
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+/* Primary button */
+.primary {
+  background-color: #ffffff;
+  color: #2e7d32;
+}
+
+/* Secondary button */
+.secondary {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+}
+
+/* Hover effect */
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+}

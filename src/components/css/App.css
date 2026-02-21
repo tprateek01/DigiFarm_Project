@@ -744,3 +744,33 @@ th {
 
 /*farmer dashboard*/
 
+/* Make hero section position relative */
+.hero-section {
+  position: relative;
+}
+
+/* Admin Button Container (Top Right Inside Hero) */
+.admin-login-container {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+}
+
+/* Admin Button Style */
+.admin-btn {
+  background-color: #dc2626;   /* Red */
+  color: white;
+  padding: 8px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+/* Hover Effect */
+.admin-btn:hover {
+  background-color: #b91c1c;   /* Darker Red */
+  transform: translateY(-2px);
+}
+

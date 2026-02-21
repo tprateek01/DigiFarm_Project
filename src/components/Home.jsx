@@ -7,8 +7,14 @@ const Home1 = () => {
     <div className="home-page">
 
       {/* HERO SECTION */}
+      
       <div className="hero-section">
-        <h1>AgriTrade</h1>
+        <div className="admin-login-container">
+          <Link to="/admin/login" className="admin-btn">
+            Admin
+          </Link>
+        </div>
+        <h1>DigiFarm</h1>
         <p>Sell your crops directly or buy fresh produce at fair prices.</p>
 
         <div className="hero-actions">
@@ -30,7 +36,7 @@ const Home1 = () => {
 
       {/* FEATURES SECTION */}
       <div className="features-section">
-        <h2>Why AgriTrade?</h2>
+        <h2>Why DigiFarm?</h2>
         <div className="feature-cards">
           <div className="feature-card">
             <h3>Fair Prices</h3>
@@ -77,7 +83,7 @@ const Home1 = () => {
       {/* CALL TO ACTION */}
       <div className="cta-section">
         <h2>Ready to Start Trading?</h2>
-        <p>Whether you are a Farmer or a Merchant, join AgriTrade today!</p>
+        <p>Whether you are a Farmer or a Merchant, join DigiFarm today!</p>
         <div className="cta-actions">
           <Link to="/login" className="action-btn primary">Login</Link>
           <Link to="/register" className="action-btn secondary">Register</Link>

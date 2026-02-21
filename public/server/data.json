@@ -1,4 +1,18 @@
 {
+  "admin": [
+    {
+      "id": "adm_1",
+      "username": "admin7985@digifarm.com",
+      "password": "password7985",
+      "role": "admin"
+    },
+    {
+      "id": "de98",
+      "username": "Prateek123",
+      "password": "Prateek@7985",
+      "role": "admin"
+    }
+  ],
   "user": [
     {
       "id": "5a9b",
@@ -509,6 +523,22 @@
       "totalPrice": "3",
       "status": "accepted",
       "created_date": "2026-02-17T04:21:50.380Z"
+    }
+  ],
+  "complaints": [
+    {
+      "id": "c1",
+      "userName": "Eisha singh",
+      "role": "farmer",
+      "issue": "Payment not received for Order #123",
+      "status": "Resolved"
+    },
+    {
+      "id": "c2",
+      "userName": "prisha singh",
+      "role": "merchant",
+      "issue": "App crashing on checkout",
+      "status": "Resolved"
     }
   ]
 }

@@ -377,6 +377,234 @@ sendInvoiceMessageToFarmer: async function (farmerId, orderId, amount) {
     doc.save(`Invoice_Order_${order.id}.pdf`);
   },
 
+  // ================= ADMIN SECTION =================
+
+// Get all users
+getAllUsers: async function () {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/user`);
+    return await res.json();
+  } catch (err) {
+    console.error("getAllUsers error:", err);
+    return [];
+  }
+},
+
+// Get users by role
+getUsersByRole: async function (role) {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/user`);
+    const users = await res.json();
+    return users.filter(
+      (u) => (u.role || "").toLowerCase() === role.toLowerCase()
+    );
+  } catch (err) {
+    console.error("getUsersByRole error:", err);
+    return [];
+  }
+},
+
+// Delete user
+deleteUser: async function (userId) {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/user/${userId}`, {
+      method: "DELETE",
+      headers: defaultHeaders,
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("deleteUser error:", err);
+    return null;
+  }
+},
+
+// Get all orders (admin)
+getAllOrders: async function () {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/orders`);
+    return await res.json();
+  } catch (err) {
+    console.error("getAllOrders error:", err);
+    return [];
+  }
+},
+
+// Get dashboard statistics
+getAdminStats: async function () {
+  try {
+    const [usersRes, productsRes, ordersRes] = await Promise.all([
+      fetch(`${config.API_HOST_URL}/user`),
+      fetch(`${config.API_HOST_URL}/products`),
+      fetch(`${config.API_HOST_URL}/orders`)
+    ]);
+
+    const users = await usersRes.json();
+    const products = await productsRes.json();
+    const orders = await ordersRes.json();
+
+    return {
+      totalFarmers: users.filter(u => u.role === "Farmer").length,
+      totalMerchants: users.filter(u => u.role === "Merchant").length,
+      totalProducts: products.length,
+      totalOrders: orders.length,
+      openOrders: orders.filter(o => o.status !== "Delivered").length
+    };
+  } catch (err) {
+    console.error("getAdminStats error:", err);
+    return {};
+  }
+},
+getAdminStats: async function () {
+  try {
+    const [usersRes, productsRes, ordersRes] = await Promise.all([
+      fetch(`${config.API_HOST_URL}/user`),
+      fetch(`${config.API_HOST_URL}/products`),
+      fetch(`${config.API_HOST_URL}/orders`)
+    ]);
+
+    const users = await usersRes.json();
+    const products = await productsRes.json();
+    const orders = await ordersRes.json();
+
+    return {
+      // Use .toLowerCase() to match your data.json values safely
+      totalFarmers: users.filter(u => (u.role || "").toLowerCase() === "farmer").length,
+      totalMerchants: users.filter(u => (u.role || "").toLowerCase() === "merchant").length,
+      totalProducts: products.length,
+      totalOrders: orders.length,
+      openOrders: orders.filter(o => o.status !== "Delivered").length
+    };
+  } catch (err) {
+    console.error("getAdminStats error:", err);
+    return {
+      totalFarmers: 0,
+      totalMerchants: 0,
+      totalProducts: 0,
+      totalOrders: 0,
+      openOrders: 0
+    };
+  }
+},
+// Inside userApiService in userApi.js
+
+// Fetch all products for the admin
+getAllProductsAdmin: async function () {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/products`);
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    return [];
+  }
+},
+
+// Update product status (Approve/Reject)
+updateProductStatus: async function (productId, status) {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/products/${productId}`, {
+      method: "PATCH",
+      headers: defaultHeaders,
+      body: JSON.stringify({ status: status }),
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Error updating status:", err);
+  }
+},
+
+
+// 1. Fetch all complaints
+getAllComplaints: async function () {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/complaints`);
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching complaints:", err);
+    return [];
+  }
+},
+
+// 2. Update complaint status (e.g., from 'Open' to 'Resolved')
+updateComplaintStatus: async function (complaintId, status) {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/complaints/${complaintId}`, {
+      method: "PATCH",
+      headers: defaultHeaders,
+      body: JSON.stringify({ status: status }),
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Error updating complaint:", err);
+  }
+},
+
+// Admin Orders
+
+getAllOrdersAdmin: async function () {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/orders`);
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching all orders:", err);
+    return [];
+  }
+},
+
+deleteOrderAdmin: async function (orderId) {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/orders/${orderId}`, {
+      method: "DELETE",
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Error deleting order:", err);
+  }
+},
+
+
+// 1. Admin Login Logic
+adminLogin: async function (credentials, onSuccess) {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/admin`);
+    const admins = await res.json();
+
+    // Check if any admin in the array matches both username and password
+    const matchedAdmin = admins.find(
+      (a) => a.username === credentials.username && a.password === credentials.password
+    );
+
+    if (matchedAdmin) {
+      // Store session data so the app knows we are logged in
+      localStorage.setItem("session_data", JSON.stringify({ 
+        id: matchedAdmin.id, 
+        username: matchedAdmin.username, 
+        role: "admin" 
+      }));
+      onSuccess(matchedAdmin);
+    } else {
+      window.alert("Invalid Admin Username or Password");
+    }
+  } catch (err) {
+    console.error("Admin Login Fetch Error:", err);
+    window.alert("Connection error. Is your JSON server running?");
+  }
+},
+
+// 2. Register a new Admin (Only accessible by existing Admin)
+registerNewAdmin: async function (adminData) {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/admin`, {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify({ ...adminData, role: "admin" }),
+    });
+    const data = await res.json();
+    if (data.id) window.alert("New Admin added successfully!");
+  } catch (err) {
+    console.error("Error adding admin:", err);
+  }
+}
+
 };
 
 export { userApiService };
