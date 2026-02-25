@@ -1,0 +1,125 @@
+/* MerchantSettings.css */
+
+.mset-container {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0;
+    background: #fdfdfd;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.mset-header-banner {
+    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), var(--page-hero-image);
+    background-size: cover;
+    background-position: center;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.mset-content-box {
+    padding: 30px;
+}
+
+.mset-section-card {
+    background: white;
+    padding: 25px;
+    border: 1px solid #ececec;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.mset-section-title {
+    color: #1b5e20;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    border-left: 5px solid #2e7d32;
+    padding-left: 15px;
+}
+
+.mset-grid-layout {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.mset-input-control {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.mset-input-control label {
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.mset-input-control input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.mset-input-control input:focus {
+    border-color: #2e7d32;
+    background: white;
+    outline: none;
+}
+
+.mset-error-text {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    height: 15px;
+}
+
+.mset-update-button {
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.mset-update-button:hover {
+    background: #1b5e20;
+}
+
+.mset-danger-area {
+    border: 1px solid #ffdde1;
+    background-color: #fffafa;
+}
+
+.mset-danger-title {
+    color: #c62828;
+    border-left-color: #c62828;
+}
+
+.mset-delete-action {
+    background: #c62828;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.mset-delete-action:hover {
+    background: #b71c1c;
+}
+
+@media (max-width: 768px) {
+    .mset-grid-layout {
+        grid-template-columns: 1fr;
+    }
+}

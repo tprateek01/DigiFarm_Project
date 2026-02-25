@@ -774,3 +774,11 @@ th {
   transform: translateY(-2px);
 }
 
+.hero-banner {
+  width: 100%;
+  height: 300px;
+  background-image: var(--page-hero-image);
+  background-size: cover;
+  background-position: center;
+  transition: background-image 0.5s ease-in-out; /* Smooth fade when switching pages */
+}

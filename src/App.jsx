@@ -3,27 +3,27 @@ import { Routes, Route } from "react-router-dom";
 
 import Home from "./components/Home";
 import Login from "./components/Login";
-import FarmerRegister from "./components/FarmerRegister";
-import MerchantRegister from "./components/MerchantRegister";
-import OrderForm from './components/OrderForm';
-import MerchantProfile from './components/MerchantProfile';
-import Dashboard from "./components/MerchantDashboard";
+import FarmerRegister from "./components/farmer/FarmerRegister";
+import MerchantRegister from "./components/merchant/MerchantRegister";
+import OrderForm from './components/farmer/OrderForm';
+import MerchantProfile from './components/merchant/MerchantProfile';
+import Dashboard from "./components/merchant/MerchantDashboard";
 import "./components/css/App.css";
-import FarmerDashboard from './components/FarmerDashboard';
-import FarmerProfile from './components/FarmerProfile';
-import FarmerOrders from './components/FarmerOrders';
-import FarmerAddProduct from './components/FarmerAddProduct';
-import FarmerProductList from './components/FarmerProductList';
+import FarmerDashboard from './components/farmer/FarmerDashboard';
+import FarmerProfile from './components/farmer/FarmerProfile';
+import FarmerOrders from './components/farmer/FarmerOrders';
+import FarmerAddProduct from './components/farmer/FarmerAddProduct';
+import FarmerProductList from './components/farmer/FarmerProductList';
 import ProtectedRoute from "./helper/ProtectedRoutes";
 import Toaster from "./components/alert/Toaster";
-import FarmerProductCard from "./components/FarmerProductCard";
-import FarmerSettings from "./components/FarmerSettings";
-import MerchantProducts from "./components/MerchantProducts";
-import MerchantOrders from "./components/MerchantOrders";
-import MerchantLayout from "./components/MerchantLayout";
-import FarmerLayout from "./components/FarmerLayout";
-import FarmerChats from "./components/FarmersChats";
-import MerchantChats from "./components/MerchantChats";
+import FarmerProductCard from "./components/farmer/FarmerProductCard";
+import FarmerSettings from "./components/farmer/FarmerSettings";
+import MerchantProducts from "./components/merchant/MerchantProducts";
+import MerchantOrders from "./components/merchant/MerchantOrders";
+import MerchantLayout from "./components/merchant/MerchantLayout";
+import FarmerLayout from "./components/farmer/FarmerLayout";
+import FarmerChats from "./components/farmer/FarmersChats";
+import MerchantChats from "./components/merchant/MerchantChats";
 import Register from "./components/Register";
 
 /* ✅ ADMIN IMPORTS */
@@ -38,9 +38,14 @@ import AdminLogin from "./components/admin/AdminLogin";
 import Orders from "./components/admin/Orders";
 import AddAdmin from "./components/admin/AddAdmin";
 
+
+import TitleUpdater from "./TitleUpdater";
+import MerchantSettings from "./components/merchant/MerchantSettings";
+
 function App() {
   return (
     <React.Fragment>
+      <TitleUpdater />
       <Toaster />
 
       <Routes>
@@ -80,6 +85,8 @@ function App() {
           <Route path="orders" element={<MerchantOrders />} />
           <Route path="chat" element={<MerchantChats />} />
           <Route path="product" element={<MerchantProducts />} />
+          <Route path="settings" element={<MerchantSettings />} />
+          
         </Route>
 
         {/* ================= ADMIN ROUTES ================= */}

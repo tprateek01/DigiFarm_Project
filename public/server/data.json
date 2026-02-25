@@ -59,6 +59,25 @@
       "companyType": "LLP",
       "registrationNo": "123",
       "role": "merchant"
+    },
+    {
+      "id": "7680",
+      "name": "Prateek Tripathi",
+      "email": "prateekmrj08@gmail.com",
+      "mobile": "7985177955",
+      "password": "7985177955",
+      "role": "farmer"
+    },
+    {
+      "id": "2b38",
+      "name": "Prateek Tiwari",
+      "companyName": "RPH",
+      "email": "prateekmrj08@gmail.com",
+      "mobile": "7985177955",
+      "password": "7985177955",
+      "companyType": "Proprietorship",
+      "registrationNo": "7239",
+      "role": "merchant"
     }
   ],
   "products": [
