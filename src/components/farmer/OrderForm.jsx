@@ -111,7 +111,7 @@ const OrderForm = () => {
 
       {farmerInfoVisible && (
         <div id="farmerInfo" className="farmer-info">
-          <img src={farmerDetails.img} alt="Farmer Photo" id="farmerPhoto" />
+          <img src={farmerDetails.img} alt="Farmer" id="farmerPhoto" />
           <div className="details">
             <span id="farmerName">{farmerDetails.name}</span>
             <span id="farmerCompany">{farmerDetails.company}</span>

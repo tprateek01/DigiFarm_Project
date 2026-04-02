@@ -13,8 +13,6 @@ ChartJS.register(BarElement, CategoryScale, LinearScale);
 export default function MerchantDashboard() {
   const [products, setProducts] = useState([]);
   const [merchantName, setMerchantName] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [msg, setMsg] = useState("");
   const [orders, setOrders] = useState([]);
   const [prices, setPrices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +30,6 @@ export default function MerchantDashboard() {
         await userApiService.getMerchantOrders(session.id, setOrders);
         const live = await userApiService.getLivePrices();
         setPrices(live || []);
-        await userApiService.getMerchantMessages(session.id, setMessages);
 
       } catch (err) {
         console.error("Dashboard load failed:", err);
@@ -43,14 +40,6 @@ export default function MerchantDashboard() {
 
     loadData();
   }, []);
-
-  const sendMessage = () => {
-    if (!msg.trim()) return;
-
-    setMessages(prev => [...prev, { text: msg, self: true }]);
-    userApiService.sendMerchantMessage(msg);
-    setMsg("");
-  };
 
   if (loading) return <p>Loading dashboard...</p>;
 
@@ -100,32 +89,8 @@ export default function MerchantDashboard() {
           </div>
 
           <div className="stat-card">
-            <h4>Messages</h4>
-            <p>{messages.length}</p>
-          </div>
-        </div>
-
-        {/* Chat */}
-        <div className="dashboard-box">
-          <h3>Live Chat with Farmers</h3>
-
-          <div className="chat-box">
-            {messages.map((m, i) => (
-              <div key={i} className={m.self ? "msg self" : "msg"}>
-                {m.text}
-              </div>
-            ))}
-          </div>
-
-          <div className="chat-input">
-            <input
-              value={msg}
-              onChange={e => setMsg(e.target.value)}
-              placeholder="Type message..."
-            />
-            <button onClick={sendMessage} disabled={!msg.trim()}>
-              Send
-            </button>
+            <h4>Chat</h4>
+            <p>Open Chats</p>
           </div>
         </div>
 

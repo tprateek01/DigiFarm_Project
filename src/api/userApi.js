@@ -6,6 +6,40 @@ const defaultHeaders = {
 };
 
 const userApiService = {
+  // ----------------- OTP + Password Reset -----------------
+  requestOtp: async function (email, purpose) {
+    const res = await fetch(`${config.API_HOST_URL}/auth/request-otp`, {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify({ email, purpose }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message || "Failed to request OTP");
+    return data;
+  },
+
+  verifyOtp: async function (email, purpose, otp) {
+    const res = await fetch(`${config.API_HOST_URL}/auth/verify-otp`, {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify({ email, purpose, otp }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message || "Failed to verify OTP");
+    return data;
+  },
+
+  resetPassword: async function ({ email, newPassword, otp_token }) {
+    const res = await fetch(`${config.API_HOST_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify({ email, newPassword, otp_token }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message || "Failed to reset password");
+    return data;
+  },
+
   // ----------------- Registration -----------------
   RegisterFarmer: async function (farmerFormData) {
     try {
@@ -42,25 +76,28 @@ const userApiService = {
   },
 
   // ----------------- Login -----------------
-  login: async function (credentials, role, gotoDashboard) {
-    try {
-      const res = await fetch("/server/data.json");
-      const jsonData = await res.json();
-      const roleData = jsonData.user.filter(
-        (u) => (u.role || u.role_name || "").toLowerCase() === role.toLowerCase()
-      );
-      const matchedUser = roleData.find(
-        (u) =>
-          (u.email === credentials.identifier || u.mobile === credentials.identifier) &&
-          u.password === credentials.password
-      );
-      if (matchedUser) gotoDashboard(matchedUser);
-      else window.alert("Invalid credentials for " + role);
-    } catch (err) {
-      console.error(err);
-      window.alert("Error fetching credentials");
+login: async function ({ identifier, password }, role, callback) {
+  try {
+    const res = await fetch(`${config.API_HOST_URL}/login`, {
+      method: "POST", // <--- THIS MUST BE POST
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ identifier, password, role }), // Send data in body
+    });
+
+    const matchedUser = await res.json();
+
+    if (res.ok) {
+      callback(matchedUser); 
+    } else {
+      window.alert(matchedUser.message || "Invalid credentials");
     }
-  },
+  } catch (err) {
+    console.error("Login Error:", err);
+    window.alert("Check if backend server.js is running!");
+  }
+},
 
   // ----------------- Products -----------------
   AddProduct: async function (productData, callback) {
@@ -322,37 +359,78 @@ updatePaymentStatus: async function (orderId, payment_status, callback) {
       body: JSON.stringify({ payment_status }),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.message || "Failed to update payment status");
+    }
     if (callback) callback(data);
+    return data;
   } catch (err) {
     console.error("updatePaymentStatus error:", err);
+    throw err;
   }
 },
 // ---------------- SEND INVOICE MESSAGE ----------------
 sendInvoiceMessageToFarmer: async function (farmerId, orderId, amount) {
   try {
     const session = JSON.parse(localStorage.getItem("session_data"));
-    const key = [session.id, farmerId].sort().join("_");
-
-    const chats = JSON.parse(localStorage.getItem("digifarm_chats")) || {};
-
-    if (!chats[key]) chats[key] = [];
-
-    chats[key].push({
-      id: Date.now(),
-      sender: session.id,
-      text: `📄 Invoice Generated\nOrder ID: ${orderId}\nAmount: ₹${amount}\nPayment Status: Paid ✅`,
-      type: "invoice",
-      seen: false,
-      deleted: false,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    await fetch(`${config.API_HOST_URL}/chat/messages`, {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify({
+        sender_id: session.id,
+        receiver_id: farmerId,
+        type: "text",
+        text: `📄 Invoice Generated\nOrder ID: ${orderId}\nAmount: ₹${amount}\nPayment Status: Paid ✅`,
+      }),
     });
-
-    localStorage.setItem("digifarm_chats", JSON.stringify(chats));
   } catch (err) {
     console.error("Error sending invoice message:", err);
   }
 },
+
+  // ----------------- New Chat API (backend-persisted) -----------------
+  getChatContacts: async function (userId) {
+    const res = await fetch(
+      `${config.API_HOST_URL}/chat/contacts?user_id=${encodeURIComponent(userId)}`
+    );
+    const data = await res.json().catch(() => ([]));
+    if (!res.ok) throw new Error(data?.message || "Failed to load contacts");
+    return data;
+  },
+
+  getChatMessages: async function (threadKey) {
+    const res = await fetch(
+      `${config.API_HOST_URL}/chat/messages?thread_key=${encodeURIComponent(
+        threadKey
+      )}`
+    );
+    const data = await res.json().catch(() => ([]));
+    if (!res.ok) throw new Error(data?.message || "Failed to load messages");
+    return data;
+  },
+
+  sendChatMessage: async function ({ sender_id, receiver_id, type, text, image }) {
+    const res = await fetch(`${config.API_HOST_URL}/chat/messages`, {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify({ sender_id, receiver_id, type, text, image }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message || "Failed to send message");
+    return data;
+  },
+
+  markChatSeen: async function ({ thread_key, user_id }) {
+    const res = await fetch(`${config.API_HOST_URL}/chat/messages/seen`, {
+      method: "PATCH",
+      headers: defaultHeaders,
+      body: JSON.stringify({ thread_key, user_id }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message || "Failed to mark seen");
+    return data;
+  },
 
 
  // ---------------- GENERATE PDF INVOICE ----------------
@@ -430,30 +508,6 @@ getAllOrders: async function () {
 },
 
 // Get dashboard statistics
-getAdminStats: async function () {
-  try {
-    const [usersRes, productsRes, ordersRes] = await Promise.all([
-      fetch(`${config.API_HOST_URL}/user`),
-      fetch(`${config.API_HOST_URL}/products`),
-      fetch(`${config.API_HOST_URL}/orders`)
-    ]);
-
-    const users = await usersRes.json();
-    const products = await productsRes.json();
-    const orders = await ordersRes.json();
-
-    return {
-      totalFarmers: users.filter(u => u.role === "Farmer").length,
-      totalMerchants: users.filter(u => u.role === "Merchant").length,
-      totalProducts: products.length,
-      totalOrders: orders.length,
-      openOrders: orders.filter(o => o.status !== "Delivered").length
-    };
-  } catch (err) {
-    console.error("getAdminStats error:", err);
-    return {};
-  }
-},
 getAdminStats: async function () {
   try {
     const [usersRes, productsRes, ordersRes] = await Promise.all([
@@ -565,7 +619,7 @@ deleteOrderAdmin: async function (orderId) {
 // 1. Admin Login Logic
 adminLogin: async function (credentials, onSuccess) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/admin`);
+    const res = await fetch(`${config.API_HOST_URL}/login`);
     const admins = await res.json();
 
     // Check if any admin in the array matches both username and password

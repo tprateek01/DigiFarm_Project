@@ -1,10 +1,15 @@
 // src/components/Auth/Register.jsx
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { userApiService } from "../../api/userApi";
-import { Navigate } from "react-router-dom";
 
 const FarmerRegister = () => {
+  const [otp, setOtp] = useState("");
+  const [otpRequested, setOtpRequested] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpToken, setOtpToken] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+
   const [userData, setUserData] = useState({
     fname: "",
     lname: "",
@@ -140,6 +145,11 @@ const FarmerRegister = () => {
 
     if (!isValid) return;
 
+    if (!otpVerified || !otpToken) {
+      alert("Please verify your email with OTP before registering.");
+      return;
+    }
+
     const farmerRegisterData = {
       name:
         inputFirstNameRef.current.value.trim() +
@@ -149,14 +159,60 @@ const FarmerRegister = () => {
       mobile: inputMobileRef.current.value.trim(),
       password: inputPasswordRef.current.value.trim(),
       role: "farmer",
+      otp_token: otpToken,
     };
 
     userApiService.RegisterFarmer(farmerRegisterData);
     navigate("/login");
   };
 
+  const requestOtp = async () => {
+    const email = (userData.email || "").trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert("Enter a valid email first.");
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      await userApiService.requestOtp(email, "register");
+      setOtpRequested(true);
+      setOtpVerified(false);
+      setOtpToken("");
+      alert("OTP sent to your email (check backend console in this project).");
+    } catch (e) {
+      alert(e?.message || "Failed to send OTP");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    const email = (userData.email || "").trim();
+    if (!otp || otp.trim().length !== 6) {
+      alert("Enter the 6-digit OTP.");
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      const res = await userApiService.verifyOtp(email, "register", otp.trim());
+      setOtpVerified(true);
+      setOtpToken(res.otp_token);
+      alert("Email verified successfully.");
+    } catch (e) {
+      alert(e?.message || "OTP verification failed");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   return (
     <div className="auth-container">
+      <div style={{ position: "absolute", top: 16, left: 16 }}>
+        <Link to="/" className="link" style={{ textDecoration: "none" }}>
+          Home
+        </Link>
+      </div>
       <h2>Farmer Registration</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -183,14 +239,50 @@ const FarmerRegister = () => {
         </div>
         <div className="form-group">
           <label>Email:</label>
-          <input
-            type="email"
-            name="email"
-            value={userData.email}
-            onChange={handleChange}
-            ref={inputEmailRef}
-          />
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input
+              type="email"
+              name="email"
+              value={userData.email}
+              onChange={(e) => {
+                setOtpRequested(false);
+                setOtpVerified(false);
+                setOtpToken("");
+                setOtp("");
+                handleChange(e);
+              }}
+              ref={inputEmailRef}
+              style={{ flex: 1 }}
+            />
+            <button
+              type="button"
+              onClick={requestOtp}
+              disabled={otpLoading}
+              style={{ whiteSpace: "nowrap" }}
+            >
+              {otpRequested ? "Resend OTP" : "Send OTP"}
+            </button>
+          </div>
           <span ref={errorEmailRef}></span>
+          {otpRequested && (
+            <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="Enter 6-digit OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+              />
+              <button type="button" onClick={verifyOtp} disabled={otpLoading}>
+                Verify
+              </button>
+              {otpVerified && (
+                <span style={{ color: "green", alignSelf: "center" }}>
+                  Verified
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <div className="form-group">
           <label>Mobile No. </label>

@@ -19,17 +19,13 @@ const MerchantSettings = () => {
   const inputFirstNameRef = useRef(null);
   const inputLastNameRef = useRef(null);
   const inputCompanyNameRef = useRef(null);
-  const inputEmailRef = useRef(null);
   const inputMobileRef = useRef(null);
-  const inputRegNoRef = useRef(null);
 
   // Error Message Refs
   const errorFnameRef = useRef(null);
   const errorLnameRef = useRef(null);
   const errorCnameRef = useRef(null);
-  const errorEmailRef = useRef(null);
   const errorMobileRef = useRef(null);
-  const errorRegNoRef = useRef(null);
 
   const navigate = useNavigate();
 

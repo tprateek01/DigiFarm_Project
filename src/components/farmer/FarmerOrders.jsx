@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { userApiService } from "../../api/userApi";
 import "../../styles/farmer/Forder.css";
@@ -7,22 +7,25 @@ export default function FarmerOrders() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [openMerchant, setOpenMerchant] = useState(null);
-  const session = JSON.parse(localStorage.getItem("session_data"));
+  const session = useMemo(
+    () => JSON.parse(localStorage.getItem("session_data")),
+    []
+  );
 
-  const loadOrders = () => {
+  const loadOrders = useCallback(() => {
     if (!session || session.role !== "farmer") {
       alert("Unauthorized. Please login.");
       navigate("/login");
       return;
     }
     userApiService.getFarmerOrders(session.id, setOrders);
-  };
+  }, [session, navigate]);
 
   useEffect(() => {
     loadOrders();
     const interval = setInterval(loadOrders, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [loadOrders]);
 
   const updateStatus = (id, status) => {
     userApiService.updateOrderStatus(id, status, loadOrders);
@@ -119,6 +122,7 @@ export default function FarmerOrders() {
                         <div className="btn-group">
                           <button
                             className="accept-btn"
+                            disabled={o.payment_status !== "paid"}
                             onClick={() =>
                               updateStatus(o.id, "accepted")
                             }

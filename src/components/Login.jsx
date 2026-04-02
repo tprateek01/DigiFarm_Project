@@ -11,8 +11,7 @@ const Login1 = () => {
   const errorPasswordRef = useRef(null);
   const navigate = useNavigate();
 
-  const isValidEmail = (v) => /\S+@\S+\.\S+/.test(v);
-  const isValidPhone = (v) => /^[0-9]{10}$/.test(v);
+  const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -26,8 +25,8 @@ const Login1 = () => {
     if (!identifier) {
       errorIdentifierRef.current.textContent = "Required";
       isValid = false;
-    } else if (!isValidEmail(identifier) && !isValidPhone(identifier)) {
-      errorIdentifierRef.current.textContent = "Invalid email or mobile";
+    } else if (!isValidEmail(identifier)) {
+      errorIdentifierRef.current.textContent = "Invalid email";
       isValid = false;
     }
 
@@ -63,6 +62,11 @@ const Login1 = () => {
 
   return (
     <div className="auth-container">
+      <div style={{ position: "absolute", top: 16, left: 16 }}>
+        <Link to="/" className="link" style={{ textDecoration: "none" }}>
+          Home
+        </Link>
+      </div>
       {/* Role toggle */}
       <div className="radiop togglebutton">
         <button
@@ -84,10 +88,10 @@ const Login1 = () => {
       <h2>{role.charAt(0).toUpperCase() + role.slice(1)} Login</h2>
 
       <form onSubmit={handleSubmit}>
-        {/* Email or Mobile */}
+        {/* Email */}
         <div className="form-group">
-          <label>Email or Mobile:</label>
-          <input type="text" ref={inputIdentifierRef} />
+          <label>Email:</label>
+          <input type="email" ref={inputIdentifierRef} />
           <span ref={errorIdentifierRef} style={{ color: "red" }}></span>
         </div>
 

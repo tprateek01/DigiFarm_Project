@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { userApiService } from "../../api/userApi.js"; // Import the API service
 import "./admin.css"; 
 
@@ -29,6 +29,11 @@ const AdminLogin = () => {
   return (
     <div className="login-page-wrapper">
       <div className="login-card-container">
+        <div style={{ position: "absolute", top: 16, left: 16 }}>
+          <Link to="/" className="green-link" style={{ textDecoration: "none" }}>
+            Home
+          </Link>
+        </div>
         
         <h2 className="login-header">Admin Login</h2>
 
@@ -54,9 +59,6 @@ const AdminLogin = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <div className="forgot-link-container">
-                <a href="#forgot" className="green-link">Forgot Password?</a>
-              </div>
             </div>
 
             <button type="submit" className="login-action-btn">Login</button>

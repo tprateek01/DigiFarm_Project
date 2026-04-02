@@ -13,10 +13,6 @@ ChartJS.register(BarElement, CategoryScale, LinearScale);
 export default function FarmerDashboard() {
   const [products, setProducts] = useState([]);
   const [farmerName, setFarmerName] = useState("");
-  const [messages, setMessages] = useState([
-    { text: "Merchant: Hello, available wheat?", self: false }
-  ]);
-  const [msg, setMsg] = useState("");
   const [prices, setPrices] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,12 +26,8 @@ export default function FarmerDashboard() {
 
         await userApiService.getFarmerProducts(session.id, setProducts);
 
-        // demo live prices
-        setPrices([
-          { crop: "Wheat", price: 24 },
-          { crop: "Rice", price: 32 },
-          { crop: "Mango", price: 65 }
-        ]);
+        const live = await userApiService.getLivePrices();
+        setPrices(live || []);
       } catch (err) {
         console.error("Farmer dashboard load failed:", err);
       } finally {
@@ -45,21 +37,6 @@ export default function FarmerDashboard() {
 
     loadData();
   }, []);
-
-  const send = () => {
-    if (!msg.trim()) return;
-
-    setMessages(prev => [...prev, { text: msg, self: true }]);
-
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev,
-        { text: "Merchant: Offer ₹25/kg", self: false }
-      ]);
-    }, 1000);
-
-    setMsg("");
-  };
 
   if (loading) return <p>Loading dashboard...</p>;
 
@@ -102,32 +79,8 @@ export default function FarmerDashboard() {
           </div>
 
           <div className="stat-card">
-            <h4>Messages</h4>
-            <p>{messages.length}</p>
-          </div>
-        </div>
-
-        {/* Chat */}
-        <div className="dashboard-box">
-          <h3>Live Chat</h3>
-
-          <div className="chat-box">
-            {messages.map((m, i) => (
-              <div key={i} className={m.self ? "msg self" : "msg"}>
-                {m.text}
-              </div>
-            ))}
-          </div>
-
-          <div className="chat-input">
-            <input
-              value={msg}
-              onChange={e => setMsg(e.target.value)}
-              placeholder="Type message..."
-            />
-            <button onClick={send} disabled={!msg.trim()}>
-              Send
-            </button>
+            <h4>Chat</h4>
+            <p>Open Chats</p>
           </div>
         </div>
 
@@ -136,12 +89,16 @@ export default function FarmerDashboard() {
           <h3>Live Prices</h3>
 
           <div className="price-grid">
-            {prices.map((p, i) => (
+            {prices.length === 0 ? (
+              <p className="empty-msg">No live prices available.</p>
+            ) : (
+              prices.map((p, i) => (
               <div key={i} className="price-card">
                 <h4>{p.crop}</h4>
                 <p>₹{p.price}/kg</p>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

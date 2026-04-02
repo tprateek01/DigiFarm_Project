@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { userApiService } from "../../api/userApi";
 import PaymentButton from "./PaymentButton"; // Import PaymentButton
@@ -12,9 +12,12 @@ export default function MerchantOrders() {
   const [search, setSearch] = useState("");
 
   const navigate = useNavigate();
-  const session = JSON.parse(localStorage.getItem("session_data"));
+  const session = useMemo(
+    () => JSON.parse(localStorage.getItem("session_data")),
+    []
+  );
 
-  const loadOrders = () => {
+  const loadOrders = useCallback(() => {
     if (!session || session.role !== "merchant") {
       navigate("/login");
       return;
@@ -25,11 +28,11 @@ export default function MerchantOrders() {
       setOrders(data || []);
       setLoading(false);
     });
-  };
+  }, [session, navigate]);
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [loadOrders]);
 
   // ---------- CANCEL ORDERS ----------
   const cancelOrder = (order) => {
@@ -131,24 +134,28 @@ export default function MerchantOrders() {
   // ---------- PAYMENT STATUS UPDATE ----------
 
 
-const handlePaid = (orderId, farmerId, amount, order) => {
-  userApiService.updatePaymentStatus(orderId, "paid", (data) => {
-    toast.success("Payment received!");
+  const handlePaid = async (orderId, farmerId, amount, order) => {
+    try {
+      await userApiService.updatePaymentStatus(orderId, "paid");
+      toast.success("Payment received!");
 
-    // Update order in UI
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, payment_status: "paid" } : o))
-    );
+      // Update order in UI
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, payment_status: "paid" } : o
+        )
+      );
 
-    // 1️⃣ Send chat invoice
-    userApiService.sendInvoiceMessageToFarmer(farmerId, orderId, amount);
+      // 1) Send chat invoice (stored in localStorage, used by chat UI)
+      userApiService.sendInvoiceMessageToFarmer(farmerId, orderId, amount);
 
-    // 2️⃣ Generate downloadable PDF invoice
-    // Correct call via userApiService
-userApiService.generatePDFInvoice(order);
-
-  });
-};
+      // 2) Generate downloadable PDF invoice
+      userApiService.generatePDFInvoice(order);
+    } catch (err) {
+      console.error("Payment failed:", err);
+      toast.error("Payment failed. Please try again.");
+    }
+  };
 
 
 

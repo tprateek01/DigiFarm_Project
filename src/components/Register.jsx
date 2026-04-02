@@ -6,6 +6,11 @@ const Register = () => {
   return (
     <React.Fragment>
     <div className="hero">
+        <div style={{ position: "absolute", top: 16, left: 16 }}>
+          <Link to="/" className="actionbtn" style={{ textDecoration: "none" }}>
+            Home
+          </Link>
+        </div>
         <div className="hero1">
             <Link to="/register/farmer" className="actionbtn primary">
                 Register as a Farmer

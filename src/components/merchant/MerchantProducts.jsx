@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { userApiService } from "../../api/userApi";
 import "../../styles/merchant/MerchantProducts.css";
@@ -10,10 +10,13 @@ export default function MerchantProducts() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const session = JSON.parse(localStorage.getItem("session_data"));
+  const session = useMemo(
+    () => JSON.parse(localStorage.getItem("session_data")),
+    []
+  );
 
   // ---------------- LOAD DATA ----------------
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!session || session.role !== "merchant") {
       navigate("/login");
       return;
@@ -29,11 +32,11 @@ export default function MerchantProducts() {
         setLoading(false);
       });
     });
-  };
+  }, [session, navigate]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   // ---------------- CHECK IF ORDER ALREADY REQUESTED ----------------
   const isOrderRequested = (productId) => {
