@@ -1,4 +1,4 @@
-import config from "../config/config.json";
+import API_URL from "../config/apiConfig";
 import { jsPDF } from "jspdf";
 
 const defaultHeaders = {
@@ -6,9 +6,43 @@ const defaultHeaders = {
 };
 
 const userApiService = {
+  getMerchantProfile: async function (id, callback) {
+    try {
+      const res = await fetch(`${API_URL}/user/${id}`);
+      const data = await res.json();
+      if (callback) callback(data);
+      return data;
+    } catch (err) {
+      console.error(err);
+    }
+  },
+  getFarmerProfile: async function (id, callback) {
+    try {
+      const res = await fetch(`${API_URL}/user/${id}`);
+      const data = await res.json();
+      if (callback) callback(data);
+      return data;
+    } catch (err) {
+      console.error(err);
+    }
+  },
+  patchUser: async function (id, data, callback) {
+    try {
+      const res = await fetch(`${API_URL}/user/${id}`, {
+        method: "PATCH",
+        headers: defaultHeaders,
+        body: JSON.stringify(data),
+      });
+      const updated = await res.json();
+      if (callback) callback(updated);
+      return updated;
+    } catch (err) {
+      console.error(err);
+    }
+  },
   // ----------------- OTP + Password Reset -----------------
   requestOtp: async function (email, purpose) {
-    const res = await fetch(`${config.API_HOST_URL}/auth/request-otp`, {
+    const res = await fetch(`${API_URL}/auth/request-otp`, {
       method: "POST",
       headers: defaultHeaders,
       body: JSON.stringify({ email, purpose }),
@@ -19,7 +53,7 @@ const userApiService = {
   },
 
   verifyOtp: async function (email, purpose, otp) {
-    const res = await fetch(`${config.API_HOST_URL}/auth/verify-otp`, {
+    const res = await fetch(`${API_URL}/auth/verify-otp`, {
       method: "POST",
       headers: defaultHeaders,
       body: JSON.stringify({ email, purpose, otp }),
@@ -30,7 +64,7 @@ const userApiService = {
   },
 
   resetPassword: async function ({ email, newPassword, otp_token }) {
-    const res = await fetch(`${config.API_HOST_URL}/auth/reset-password`, {
+    const res = await fetch(`${API_URL}/auth/reset-password`, {
       method: "POST",
       headers: defaultHeaders,
       body: JSON.stringify({ email, newPassword, otp_token }),
@@ -43,7 +77,7 @@ const userApiService = {
   // ----------------- Registration -----------------
   RegisterFarmer: async function (farmerFormData) {
     try {
-      const res = await fetch(`${config.API_HOST_URL}/user`, {
+      const res = await fetch(`${API_URL}/user`, {
         method: "POST",
         headers: defaultHeaders,
         body: JSON.stringify(farmerFormData),
@@ -60,7 +94,7 @@ const userApiService = {
 
   RegisterMerchant: async function (merchantFormData) {
     try {
-      const res = await fetch(`${config.API_HOST_URL}/user`, {
+      const res = await fetch(`${API_URL}/user`, {
         method: "POST",
         headers: defaultHeaders,
         body: JSON.stringify(merchantFormData),
@@ -78,7 +112,7 @@ const userApiService = {
   // ----------------- Login -----------------
 login: async function ({ identifier, password }, role, callback) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/login`, {
+    const res = await fetch(`${API_URL}/login`, {
       method: "POST", // <--- THIS MUST BE POST
       headers: {
         "Content-Type": "application/json",
@@ -102,7 +136,7 @@ login: async function ({ identifier, password }, role, callback) {
   // ----------------- Products -----------------
   AddProduct: async function (productData, callback) {
     try {
-      const res = await fetch(`${config.API_HOST_URL}/products`, {
+      const res = await fetch(`${API_URL}/products`, {
         method: "POST",
         headers: defaultHeaders,
         body: JSON.stringify(productData),
@@ -118,7 +152,7 @@ login: async function ({ identifier, password }, role, callback) {
 
   deleteProduct: async function (productId) {
     try {
-      const res = await fetch(`${config.API_HOST_URL}/products/${productId}`, {
+      const res = await fetch(`${API_URL}/products/${productId}`, {
         method: "DELETE",
         headers: defaultHeaders,
       });
@@ -133,7 +167,7 @@ login: async function ({ identifier, password }, role, callback) {
     for (let i = 0; i < imagesArr.length; i++) {
       const base64 = imagesArr[i];
       try {
-        const res = await fetch(`${config.API_HOST_URL}/product_images`, {
+        const res = await fetch(`${API_URL}/product_images`, {
           method: "POST",
           headers: defaultHeaders,
           body: JSON.stringify({
@@ -153,7 +187,7 @@ login: async function ({ identifier, password }, role, callback) {
 
   updateProductImageStatus: async function (product_id, callback) {
     try {
-      const res = await fetch(`${config.API_HOST_URL}/products/${product_id}`, {
+      const res = await fetch(`${API_URL}/products/${product_id}`, {
         method: "PUT",
         headers: defaultHeaders,
         body: JSON.stringify({ is_image_uploaded: true }),
@@ -169,11 +203,11 @@ login: async function ({ identifier, password }, role, callback) {
   getAllProducts: async function (callback) {
     try {
       const [resProducts, resImages] = await Promise.all([
-        fetch(`${config.API_HOST_URL}/products`),
-        fetch(`${config.API_HOST_URL}/product_images`),
+        fetch(`${API_URL}/products`),
+        fetch(`${API_URL}/product_images`),
       ]);
       const [products, productImages] = await Promise.all([resProducts.json(), resImages.json()]);
-      const merged = products.map((product) => {
+      const merged = products.filter(p => String(p.status || "").toLowerCase() === 'approved').map((product) => {
         const imgObj = productImages.find((img) => img.fk_product_id === product.id);
         return { ...product, image: imgObj?.image || null };
       });
@@ -184,58 +218,81 @@ login: async function ({ identifier, password }, role, callback) {
     }
   },
 
-  getAllFarmerProducts: async function (callback) {
+  getAllFarmerProducts: async function () {
     try {
-      const [resProducts, resImages] = await Promise.all([
-        fetch(`${config.API_HOST_URL}/products`),
-        fetch(`${config.API_HOST_URL}/product_images`),
+      const [resUsers, resProducts, resImages] = await Promise.all([
+        fetch(`${API_URL}/user`),
+        fetch(`${API_URL}/products`),
+        fetch(`${API_URL}/product_images`),
       ]);
-      const [products, productImages] = await Promise.all([resProducts.json(), resImages.json()]);
-      const merged = products.map((p) => {
-        const imgs = productImages.filter((i) => i.fk_product_id === p.id);
-        return { ...p, images: imgs.length ? imgs : [] };
-      });
-      callback(merged);
+      const [users, products, productImages] = await Promise.all([resUsers.json(), resProducts.json(), resImages.json()]);
+      
+      const merged = products
+        .filter(p => p && String(p.status).toLowerCase() === 'approved')
+        .map((p) => {
+          const farmer = users.find(u => String(u.id) === String(p.fk_farmer_id));
+          
+          // Only show products from active farmers
+          if (farmer && farmer.isActive !== false) {
+            const imgs = productImages.filter((i) => String(i.fk_product_id) === String(p.id));
+            return { 
+              ...p, 
+              images: imgs.length ? imgs : [],
+              farmerName: p.farmerName || farmer?.full_name || farmer?.name || "N/A",
+              farmerLocation: p.farmerLocation || farmer?.location || "N/A",
+              farmerMobile: p.farmerMobile || farmer?.mobile || "N/A",
+              farmerRating: farmer?.rating || 0
+            };
+          }
+          return null;
+        })
+        .filter(p => p !== null);
+
+      return merged;
     } catch (err) {
-      console.error(err);
-      callback([]);
-      window.alert("Failed to fetch farmer products");
+      console.error("getAllFarmerProducts error:", err);
+      return [];
     }
   },
 
   // ----------------- Orders -----------------
   createOrder: async function (orderData, callback) {
-  try {
-    const res = await fetch(`${config.API_HOST_URL}/orders`, {
-      method: "POST",
-      headers: defaultHeaders,
-      body: JSON.stringify(orderData),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      console.error("Order API failed:", res.status, err);
-      window.alert(`Failed to place order: ${res.status}`);
-      return;
-    }
-
-    const data = await res.json();
-    if (callback) callback(data);
-  } catch (error) {
-    console.error("createOrder fetch error:", error);
-    window.alert("Failed to place order. See console for details.");
-  }
-}
-,
-  updateOrderStatus: async function (orderId, status, callback) {
     try {
-      const res = await fetch(`${config.API_HOST_URL}/orders/${orderId}`, {
-        method: "PATCH",
+      const res = await fetch(`${API_URL}/orders`, {
+        method: "POST",
         headers: defaultHeaders,
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(orderData),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error("Order API failed:", res.status, err);
+        window.alert(`Failed to place order: ${res.status}`);
+        return;
+      }
+
+      const data = await res.json();
+      if (callback) callback(data);
+      return data;
+    } catch (error) {
+      console.error("createOrder fetch error:", error);
+      window.alert("Failed to place order. See console for details.");
+    }
+  },
+
+  
+  updateOrderStatus: async function (orderId, status, extraData, callback) {
+    try {
+      const res = await fetch(`${API_URL}/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+        },
+        body: JSON.stringify({ status, ...extraData }),
       });
       const data = await res.json();
       if (callback) callback(data);
+      return data;
     } catch (err) {
       console.error("updateOrderStatus error:", err);
       window.alert("Failed to update order status");
@@ -244,7 +301,7 @@ login: async function ({ identifier, password }, role, callback) {
 
   getMerchantOrders: async function (merchantId, callback) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/orders?merchant_id=${merchantId}`);
+    const res = await fetch(`${API_URL}/orders?merchant_id=${merchantId}`);
     const data = await res.json();
 
     // support old callback style
@@ -260,10 +317,29 @@ login: async function ({ identifier, password }, role, callback) {
   }
 },
 
+  // ----------------- Payments -----------------
+  createRazorpayOrder: async function (amount, currency = "INR") {
+    const res = await fetch(`${API_URL}/payments/create-order`, {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify({ amount, currency }),
+    });
+    return await res.json();
+  },
+
+  verifyRazorpayPayment: async function (paymentData) {
+    const res = await fetch(`${API_URL}/payments/verify-payment`, {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify(paymentData),
+    });
+    return await res.json();
+  },
+
 
   getFarmerOrders: async function (farmerId, callback) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/orders?farmer_id=${farmerId}`);
+    const res = await fetch(`${API_URL}/orders?farmer_id=${farmerId}`);
     const data = await res.json();
 
     if (typeof callback === "function") callback(data);
@@ -281,7 +357,7 @@ login: async function ({ identifier, password }, role, callback) {
   // ----------------- Live Prices -----------------
   getLivePrices: async function () {
     try {
-      const res = await fetch(`${config.API_HOST_URL}/live_prices`);
+      const res = await fetch(`${API_URL}/live_prices`);
       return await res.json();
     } catch (err) {
       console.error(err);
@@ -292,7 +368,7 @@ login: async function ({ identifier, password }, role, callback) {
   // ----------------- Chat -----------------
   getMerchantMessages: async function (merchantId, callback) {
     try {
-      const res = await fetch(`${config.API_HOST_URL}/messages?merchant_id=${merchantId}`);
+      const res = await fetch(`${API_URL}/messages?merchant_id=${merchantId}`);
       const messages = await res.json();
       callback(messages);
     } catch (err) {
@@ -304,7 +380,7 @@ login: async function ({ identifier, password }, role, callback) {
   sendMerchantMessage: async function (message) {
     try {
       const session = JSON.parse(localStorage.getItem("session_data"));
-      await fetch(`${config.API_HOST_URL}/messages`, {
+      await fetch(`${API_URL}/messages`, {
         method: "POST",
         headers: defaultHeaders,
         body: JSON.stringify({
@@ -320,7 +396,7 @@ login: async function ({ identifier, password }, role, callback) {
     // ✅ Updated: Get Farmer Products + Images
     getFarmerProducts: async function (farmer_id, showProducts) {
       try {
-        const res = await fetch(`${config.API_HOST_URL}/products?fk_farmer_id=${farmer_id}`, {
+        const res = await fetch(`${API_URL}/products?fk_farmer_id=${farmer_id}`, {
           headers: defaultHeaders,
         });
   
@@ -331,7 +407,7 @@ login: async function ({ identifier, password }, role, callback) {
         const enrichedProducts = await Promise.all(
           products.map(async (product) => {
             try {
-              const imageRes = await fetch(`${config.API_HOST_URL}/product_images?fk_product_id=${product.id}`, {
+              const imageRes = await fetch(`${API_URL}/product_images?fk_product_id=${product.id}`, {
                 headers: defaultHeaders,
               });
   
@@ -353,7 +429,7 @@ login: async function ({ identifier, password }, role, callback) {
     // ---------------- UPDATE PAYMENT STATUS ----------------
 updatePaymentStatus: async function (orderId, payment_status, callback) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/orders/${orderId}`, {
+    const res = await fetch(`${API_URL}/orders/${orderId}`, {
       method: "PATCH",
       headers: defaultHeaders,
       body: JSON.stringify({ payment_status }),
@@ -374,7 +450,7 @@ updatePaymentStatus: async function (orderId, payment_status, callback) {
 sendInvoiceMessageToFarmer: async function (farmerId, orderId, amount) {
   try {
     const session = JSON.parse(localStorage.getItem("session_data"));
-    await fetch(`${config.API_HOST_URL}/chat/messages`, {
+    await fetch(`${API_URL}/chat/messages`, {
       method: "POST",
       headers: defaultHeaders,
       body: JSON.stringify({
@@ -392,7 +468,7 @@ sendInvoiceMessageToFarmer: async function (farmerId, orderId, amount) {
   // ----------------- New Chat API (backend-persisted) -----------------
   getChatContacts: async function (userId) {
     const res = await fetch(
-      `${config.API_HOST_URL}/chat/contacts?user_id=${encodeURIComponent(userId)}`
+      `${API_URL}/chat/contacts?user_id=${encodeURIComponent(userId)}`
     );
     const data = await res.json().catch(() => ([]));
     if (!res.ok) throw new Error(data?.message || "Failed to load contacts");
@@ -401,7 +477,7 @@ sendInvoiceMessageToFarmer: async function (farmerId, orderId, amount) {
 
   getChatMessages: async function (threadKey) {
     const res = await fetch(
-      `${config.API_HOST_URL}/chat/messages?thread_key=${encodeURIComponent(
+      `${API_URL}/chat/messages?thread_key=${encodeURIComponent(
         threadKey
       )}`
     );
@@ -411,7 +487,7 @@ sendInvoiceMessageToFarmer: async function (farmerId, orderId, amount) {
   },
 
   sendChatMessage: async function ({ sender_id, receiver_id, type, text, image }) {
-    const res = await fetch(`${config.API_HOST_URL}/chat/messages`, {
+    const res = await fetch(`${API_URL}/chat/messages`, {
       method: "POST",
       headers: defaultHeaders,
       body: JSON.stringify({ sender_id, receiver_id, type, text, image }),
@@ -422,7 +498,7 @@ sendInvoiceMessageToFarmer: async function (farmerId, orderId, amount) {
   },
 
   markChatSeen: async function ({ thread_key, user_id }) {
-    const res = await fetch(`${config.API_HOST_URL}/chat/messages/seen`, {
+    const res = await fetch(`${API_URL}/chat/messages/seen`, {
       method: "PATCH",
       headers: defaultHeaders,
       body: JSON.stringify({ thread_key, user_id }),
@@ -460,7 +536,7 @@ sendInvoiceMessageToFarmer: async function (farmerId, orderId, amount) {
 // Get all users
 getAllUsers: async function () {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/user`);
+    const res = await fetch(`${API_URL}/user`);
     return await res.json();
   } catch (err) {
     console.error("getAllUsers error:", err);
@@ -471,7 +547,7 @@ getAllUsers: async function () {
 // Get users by role
 getUsersByRole: async function (role) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/user`);
+    const res = await fetch(`${API_URL}/user`);
     const users = await res.json();
     return users.filter(
       (u) => (u.role || "").toLowerCase() === role.toLowerCase()
@@ -485,7 +561,7 @@ getUsersByRole: async function (role) {
 // Delete user
 deleteUser: async function (userId) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/user/${userId}`, {
+    const res = await fetch(`${API_URL}/user/${userId}`, {
       method: "DELETE",
       headers: defaultHeaders,
     });
@@ -499,7 +575,7 @@ deleteUser: async function (userId) {
 // Get all orders (admin)
 getAllOrders: async function () {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/orders`);
+    const res = await fetch(`${API_URL}/orders`);
     return await res.json();
   } catch (err) {
     console.error("getAllOrders error:", err);
@@ -511,9 +587,9 @@ getAllOrders: async function () {
 getAdminStats: async function () {
   try {
     const [usersRes, productsRes, ordersRes] = await Promise.all([
-      fetch(`${config.API_HOST_URL}/user`),
-      fetch(`${config.API_HOST_URL}/products`),
-      fetch(`${config.API_HOST_URL}/orders`)
+      fetch(`${API_URL}/user`),
+      fetch(`${API_URL}/products`),
+      fetch(`${API_URL}/orders`)
     ]);
 
     const users = await usersRes.json();
@@ -544,8 +620,22 @@ getAdminStats: async function () {
 // Fetch all products for the admin
 getAllProductsAdmin: async function () {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/products`);
-    return await res.json();
+    const [resProducts, resUsers] = await Promise.all([
+      fetch(`${API_URL}/products`),
+      fetch(`${API_URL}/user`)
+    ]);
+    const products = await resProducts.json();
+    const users = await resUsers.json();
+
+    return products.map(p => {
+      const farmer = users.find(u => String(u.id) === String(p.fk_farmer_id));
+      return {
+        ...p,
+        farmerName: p.farmerName || farmer?.full_name || farmer?.name || "N/A",
+        farmerLocation: p.farmerLocation || farmer?.location || "N/A",
+        farmerMobile: p.farmerMobile || farmer?.mobile || "N/A"
+      };
+    });
   } catch (err) {
     console.error("Error fetching products:", err);
     return [];
@@ -555,7 +645,7 @@ getAllProductsAdmin: async function () {
 // Update product status (Approve/Reject)
 updateProductStatus: async function (productId, status) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/products/${productId}`, {
+    const res = await fetch(`${API_URL}/products/${productId}`, {
       method: "PATCH",
       headers: defaultHeaders,
       body: JSON.stringify({ status: status }),
@@ -570,7 +660,7 @@ updateProductStatus: async function (productId, status) {
 // 1. Fetch all complaints
 getAllComplaints: async function () {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/complaints`);
+    const res = await fetch(`${API_URL}/complaints`);
     return await res.json();
   } catch (err) {
     console.error("Error fetching complaints:", err);
@@ -581,7 +671,7 @@ getAllComplaints: async function () {
 // 2. Update complaint status (e.g., from 'Open' to 'Resolved')
 updateComplaintStatus: async function (complaintId, status) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/complaints/${complaintId}`, {
+    const res = await fetch(`${API_URL}/complaints/${complaintId}`, {
       method: "PATCH",
       headers: defaultHeaders,
       body: JSON.stringify({ status: status }),
@@ -596,7 +686,7 @@ updateComplaintStatus: async function (complaintId, status) {
 
 getAllOrdersAdmin: async function () {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/orders`);
+    const res = await fetch(`${API_URL}/orders`);
     return await res.json();
   } catch (err) {
     console.error("Error fetching all orders:", err);
@@ -606,7 +696,7 @@ getAllOrdersAdmin: async function () {
 
 deleteOrderAdmin: async function (orderId) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/orders/${orderId}`, {
+    const res = await fetch(`${API_URL}/orders/${orderId}`, {
       method: "DELETE",
     });
     return await res.json();
@@ -619,7 +709,7 @@ deleteOrderAdmin: async function (orderId) {
 // 1. Admin Login Logic
 adminLogin: async function (credentials, onSuccess) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/login`);
+    const res = await fetch(`${API_URL}/login`);
     const admins = await res.json();
 
     // Check if any admin in the array matches both username and password
@@ -647,7 +737,7 @@ adminLogin: async function (credentials, onSuccess) {
 // 2. Register a new Admin (Only accessible by existing Admin)
 registerNewAdmin: async function (adminData) {
   try {
-    const res = await fetch(`${config.API_HOST_URL}/admin`, {
+    const res = await fetch(`${API_URL}/admin`, {
       method: "POST",
       headers: defaultHeaders,
       body: JSON.stringify({ ...adminData, role: "admin" }),
@@ -657,6 +747,20 @@ registerNewAdmin: async function (adminData) {
   } catch (err) {
     console.error("Error adding admin:", err);
   }
+},
+
+getProductById: async function (id) {
+  const res = await fetch(`${API_URL}/products/${id}`);
+  return await res.json();
+},
+
+patchProduct: async function (id, data) {
+  const res = await fetch(`${API_URL}/products/${id}`, {
+    method: "PATCH",
+    headers: defaultHeaders,
+    body: JSON.stringify(data),
+  });
+  return await res.json();
 }
 
 };

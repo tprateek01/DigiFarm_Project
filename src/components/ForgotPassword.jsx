@@ -29,7 +29,7 @@ export default function ForgotPassword() {
       await userApiService.requestOtp(e, "reset_password");
       setOtpRequested(true);
       setOtpToken("");
-      alert("OTP sent (check backend console in this project).");
+      alert("OTP sent successfully. Please check your email.");
     } catch (err) {
       alert(err?.message || "Failed to request OTP");
     } finally {
@@ -96,12 +96,13 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="auth-container">
-      <div style={{ position: "absolute", top: 16, left: 16 }}>
-        <Link to="/" className="link" style={{ textDecoration: "none" }}>
-          Home
+    <>
+      <div style={{ position: "fixed", top: 0, left: 0, margin: "15px", zIndex: 99999 }}>
+        <Link to="/" className="link" style={{ background: "#fff", padding: "8px 12px", borderRadius: "5px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", textDecoration: "none", fontSize: "1.1rem", fontWeight: "bold", color: "#2e7d32" }}>
+          ← Home
         </Link>
       </div>
+    <div className="auth-container">
 
       <h2>Forgot Password</h2>
 
@@ -119,11 +120,9 @@ export default function ForgotPassword() {
         />
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        <button type="button" onClick={requestOtp} disabled={loading}>
-          {otpRequested ? "Resend OTP" : "Send OTP"}
-        </button>
-      </div>
+      <button type="button" onClick={requestOtp} disabled={loading} style={{ width: "100%", marginBottom: "15px" }}>
+        {otpRequested ? "Resend OTP" : "Send OTP"}
+      </button>
 
       {otpRequested && (
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
@@ -173,6 +172,7 @@ export default function ForgotPassword() {
         Back to <Link className="link" to="/login">Login</Link>
       </p>
     </div>
+    </>
   );
 }
 

@@ -285,10 +285,13 @@ table th {
 }
 
 /* Status Colors */
-.status-pill.cancelled { background-color: #ffdce0; color: #af233a; }
-.status-pill.delivered { background-color: #dcffe4; color: #1e7e34; }
-.status-pill.accepted { background-color: #e0f0ff; color: #004085; }
-.status-pill.pending { background-color: #fff3cd; color: #856404; }
+.status-pill.requested { background-color: #f8f9fa; color: #495057; border: 1px solid #dee2e6; }
+.status-pill.accepted { background-color: #e3f2fd; color: #0d47a1; }
+.status-pill.dispatched { background-color: #fff3e0; color: #e65100; }
+.status-pill.delivered { background-color: #e8f5e9; color: #1b5e20; }
+.status-pill.rejected { background-color: #ffebee; color: #b71c1c; }
+.status-pill.cancelled { background-color: #fafafa; color: #616161; }
+.status-pill.pending { background-color: #fffde7; color: #fbc02d; }
 
 .payment-pill {
   font-size: 11px;

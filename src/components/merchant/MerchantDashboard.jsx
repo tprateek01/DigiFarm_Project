@@ -44,20 +44,28 @@ export default function MerchantDashboard() {
   if (loading) return <p>Loading dashboard...</p>;
 
   const totalSpending = orders.reduce(
-    (acc, o) => acc + Number(o.totalPrice || 0),
+    (acc, o) => acc + (o.payment_status === 'paid' ? Number(o.totalPrice || 0) : 0),
     0
   );
 
   const pendingOrders = orders.filter(
-    o => (o.status || "").toLowerCase() === "pending"
+    o => ["pending", "requested", "accepted", "dispatched"].includes((o.status || "").toLowerCase())
   );
+
+  // Real-time spending aggregation
+  const monthlySpending = [0, 0, 0, 0];
+  orders.filter(o => o.payment_status === 'paid').forEach(o => {
+    const date = new Date(o.created_date || Date.now());
+    const month = date.getMonth();
+    if (month < 4) monthlySpending[month] += Number(o.totalPrice || 0);
+  });
 
   const chartData = {
     labels: ["Jan", "Feb", "Mar", "Apr"],
     datasets: [
       {
         label: "Spending",
-        data: [15000, 12000, 18000, 9000],
+        data: monthlySpending,
         backgroundColor: "#4a7a2f"
       }
     ]

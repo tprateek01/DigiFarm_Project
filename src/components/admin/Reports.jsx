@@ -26,7 +26,7 @@ const Reports = () => {
 
       validProducts.forEach(p => {
         // Count by category
-        const cat = p.product_Category || "Uncategorized";
+        const cat = p.product_Category || p.productCategory || p.category || "Uncategorized";
         categories[cat] = (categories[cat] || 0) + 1;
 
         // Check for Top Selling (highest stock in this context)

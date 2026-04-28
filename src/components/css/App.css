@@ -82,11 +82,11 @@ body {
 }
 
 
-.form-group input{
-  float:left;
+.form-group input:not([type="checkbox"]) {
+  float: left;
 }
 
-.form-group input,
+.form-group input:not([type="checkbox"]),
 .form-group select,
 .form-group textarea {
   width: 100%;

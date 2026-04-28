@@ -9,11 +9,13 @@ import OrderForm from './components/farmer/OrderForm';
 import MerchantProfile from './components/merchant/MerchantProfile';
 import Dashboard from "./components/merchant/MerchantDashboard";
 import "./components/css/App.css";
+import "./components/css/ModernOverrides.css";
 import FarmerDashboard from './components/farmer/FarmerDashboard';
 import FarmerProfile from './components/farmer/FarmerProfile';
-import FarmerOrders from './components/farmer/FarmerOrders';
-import FarmerAddProduct from './components/farmer/FarmerAddProduct';
-import FarmerProductList from './components/farmer/FarmerProductList';
+import FarmerOrders from "./components/farmer/FarmerOrders";
+import FarmerAddProduct from "./components/farmer/FarmerAddProduct";
+import FarmerProductList from "./components/farmer/FarmerProductList";
+import FarmerEditProduct from "./components/farmer/FarmerEditProduct";
 import Toaster from "./components/alert/Toaster";
 import FarmerProductCard from "./components/farmer/FarmerProductCard";
 import FarmerSettings from "./components/farmer/FarmerSettings";
@@ -112,6 +114,7 @@ function App() {
         <Route path="/order-merchant" element={<OrderForm />} />
         <Route path="/Product_cart" element={<FarmerProductCard />} />
         <Route path="/add-product" element={<FarmerAddProduct />} />
+        <Route path="/edit-product/:id" element={<FarmerEditProduct />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* ================= FARMER ROUTES ================= */}

@@ -1,0 +1,81 @@
+/* ModernOverrides.css - Premium UI Additions */
+
+:root {
+  --primary-color: #2e7d32; /* Deep modern green */
+  --primary-hover: #1b5e20;
+  --bg-color: #f4f7f6;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --border-radius: 12px;
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: var(--font-family) !important;
+  background-color: var(--bg-color);
+  color: #333;
+}
+
+/* Glassmorphism Containers */
+.auth-container, .table-container, .container, .chat-wrapper {
+  background: var(--card-bg) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--border-radius) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Vibrant Buttons */
+button {
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease !important;
+  background-image: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  border: none;
+  box-shadow: var(--shadow-sm);
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(46, 125, 50, 0.2);
+}
+
+/* Inputs styling */
+input, select, textarea {
+  border-radius: 8px !important;
+  border: 1px solid #ddd !important;
+  transition: border-color 0.3s, box-shadow 0.3s !important;
+  background: #fff;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1) !important;
+  outline: none;
+}
+
+/* Table Enhancements */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+thead th {
+  background-color: #f8faf9 !important;
+  color: #555 !important;
+  font-weight: 600 !important;
+  padding: 12px 16px !important;
+}
+
+tbody td {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+tbody tr:hover {
+  background-color: #fafbfc;
+}

@@ -27,13 +27,14 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="login-page-wrapper">
-      <div className="login-card-container">
-        <div style={{ position: "absolute", top: 16, left: 16 }}>
-          <Link to="/" className="green-link" style={{ textDecoration: "none" }}>
-            Home
-          </Link>
-        </div>
+    <>
+      <div style={{ position: "fixed", top: 0, left: 0, margin: "15px", zIndex: 99999 }}>
+        <Link to="/" className="link" style={{ background: "#fff", padding: "8px 12px", borderRadius: "5px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", textDecoration: "none", fontSize: "1.1rem", fontWeight: "bold", color: "#2e7d32" }}>
+          ← Home
+        </Link>
+      </div>
+      <div className="login-page-wrapper">
+        <div className="login-card-container">
         
         <h2 className="login-header">Admin Login</h2>
 
@@ -64,8 +65,9 @@ const AdminLogin = () => {
             <button type="submit" className="login-action-btn">Login</button>
           </form>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

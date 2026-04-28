@@ -18,7 +18,24 @@ const FarmerRegister = () => {
     password: "",
     confirmPassword: "",
     checkbox: false,
+    profileImage: "",
+    aadhar_no: "",
+    id_proof: "",
+    land_area: "",
+    location: "",
   });
+
+  const handleFileChange = (e) => {
+    const { name } = e.target;
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUserData((prev) => ({ ...prev, [name || "profileImage"]: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const inputFirstNameRef = useRef(null);
   const inputLastNameRef = useRef(null);
@@ -26,6 +43,9 @@ const FarmerRegister = () => {
   const inputMobileRef = useRef(null);
   const inputPasswordRef = useRef(null);
   const inputConfirmPasswordRef = useRef(null);
+  const inputAadharRef = useRef(null);
+  const inputLandAreaRef = useRef(null);
+  const inputLocationRef = useRef(null);
   const checkBoxTermsRef = useRef(null);
   const btnSubmitRef = useRef(null);
 
@@ -35,6 +55,9 @@ const FarmerRegister = () => {
   const errorMobileRef = useRef(null);
   const errorPasswordRef = useRef(null);
   const errorConfirmPasswordRef = useRef(null);
+  const errorAadharRef = useRef(null);
+  const errorLandAreaRef = useRef(null);
+  const errorLocationRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -123,6 +146,23 @@ const FarmerRegister = () => {
       inputPasswordRef.current.style.border = "";
     }
 
+    // Aadhar validation
+    const aadharRegex = /^\d{12}$/;
+    if (inputAadharRef.current.value.trim() === "") {
+      errorAadharRef.current.textContent = "Aadhar is required";
+      errorAadharRef.current.style.color = "red";
+      inputAadharRef.current.style.border = "2px solid red";
+      isValid = false;
+    } else if (!aadharRegex.test(inputAadharRef.current.value.trim())) {
+      errorAadharRef.current.textContent = "Invalid 12-digit Aadhar";
+      errorAadharRef.current.style.color = "red";
+      inputAadharRef.current.style.border = "2px solid red";
+      isValid = false;
+    } else {
+      errorAadharRef.current.textContent = "";
+      inputAadharRef.current.style.border = "";
+    }
+
     // Confirm Password
     if (
       inputConfirmPasswordRef.current.value.trim() !==
@@ -135,6 +175,34 @@ const FarmerRegister = () => {
     } else {
       errorConfirmPasswordRef.current.textContent = "";
       inputConfirmPasswordRef.current.style.border = "";
+    }
+
+    // Land Area Validation
+    const landVal = parseFloat(inputLandAreaRef.current.value);
+    if (isNaN(landVal)) {
+      errorLandAreaRef.current.textContent = "Land area is required";
+      errorLandAreaRef.current.style.color = "red";
+      inputLandAreaRef.current.style.border = "2px solid red";
+      isValid = false;
+    } else if (landVal < 2) {
+      errorLandAreaRef.current.textContent = "Minimum 2 acres required to register";
+      errorLandAreaRef.current.style.color = "red";
+      inputLandAreaRef.current.style.border = "2px solid red";
+      isValid = false;
+    } else {
+      errorLandAreaRef.current.textContent = "";
+      inputLandAreaRef.current.style.border = "";
+    }
+
+    // Location Validation
+    if (inputLocationRef.current.value.trim() === "") {
+      errorLocationRef.current.textContent = "Location is required";
+      errorLocationRef.current.style.color = "red";
+      inputLocationRef.current.style.border = "2px solid red";
+      isValid = false;
+    } else {
+      errorLocationRef.current.textContent = "";
+      inputLocationRef.current.style.border = "";
     }
 
     // Terms Checkbox
@@ -151,15 +219,20 @@ const FarmerRegister = () => {
     }
 
     const farmerRegisterData = {
-      name:
+      full_name:
         inputFirstNameRef.current.value.trim() +
         " " +
         inputLastNameRef.current.value.trim(),
       email: inputEmailRef.current.value.trim(),
       mobile: inputMobileRef.current.value.trim(),
+      aadhar_no: inputAadharRef.current.value.trim(),
+      id_proof: userData.id_proof,
       password: inputPasswordRef.current.value.trim(),
       role: "farmer",
       otp_token: otpToken,
+      profileImage: userData.profileImage,
+      land_area: parseFloat(inputLandAreaRef.current.value),
+      earnings: 0,
     };
 
     userApiService.RegisterFarmer(farmerRegisterData);
@@ -179,7 +252,7 @@ const FarmerRegister = () => {
       setOtpRequested(true);
       setOtpVerified(false);
       setOtpToken("");
-      alert("OTP sent to your email (check backend console in this project).");
+      alert("OTP sent successfully. Please check your email.");
     } catch (e) {
       alert(e?.message || "Failed to send OTP");
     } finally {
@@ -258,7 +331,7 @@ const FarmerRegister = () => {
               type="button"
               onClick={requestOtp}
               disabled={otpLoading}
-              style={{ whiteSpace: "nowrap" }}
+              style={{ whiteSpace: "nowrap", marginTop: 0 }}
             >
               {otpRequested ? "Resend OTP" : "Send OTP"}
             </button>
@@ -273,7 +346,7 @@ const FarmerRegister = () => {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
               />
-              <button type="button" onClick={verifyOtp} disabled={otpLoading}>
+              <button type="button" onClick={verifyOtp} disabled={otpLoading} style={{ marginTop: 0 }}>
                 Verify
               </button>
               {otpVerified && (
@@ -294,6 +367,42 @@ const FarmerRegister = () => {
             ref={inputMobileRef}
           />
           <span ref={errorMobileRef}></span>
+        </div>
+        <div className="form-group">
+          <label>Land Area (Acres):</label>
+          <input
+            type="number"
+            step="0.1"
+            name="land_area"
+            value={userData.land_area}
+            onChange={handleChange}
+            ref={inputLandAreaRef}
+            placeholder="Minimum 2 acres"
+          />
+          <span ref={errorLandAreaRef}></span>
+        </div>
+        <div className="form-group">
+          <label>Aadhar Number:</label>
+          <input
+            type="text"
+            name="aadhar_no"
+            value={userData.aadhar_no}
+            onChange={handleChange}
+            ref={inputAadharRef}
+          />
+          <span ref={errorAadharRef}></span>
+        </div>
+        <div className="form-group">
+          <label>Location (City):</label>
+          <input
+            type="text"
+            name="location"
+            value={userData.location}
+            onChange={handleChange}
+            ref={inputLocationRef}
+            placeholder="e.g. Mumbai, Delhi..."
+          />
+          <span ref={errorLocationRef}></span>
         </div>
         <div className="form-group">
           <label>Password:</label>
@@ -318,6 +427,16 @@ const FarmerRegister = () => {
           <span ref={errorConfirmPasswordRef}></span>
         </div>
 
+        <div className="form-group">
+          <label>Profile Image:</label>
+          <input type="file" name="profileImage" accept="image/*" onChange={handleFileChange} />
+        </div>
+
+        <div className="form-group">
+          <label>ID Proof Document:</label>
+          <input type="file" name="id_proof" accept="image/*,.pdf" onChange={handleFileChange} />
+        </div>
+
        <div className="form-group">
          <table><tr><th> <input
             type="checkbox"
@@ -334,7 +453,7 @@ const FarmerRegister = () => {
         </button>
       </form>
       <p>
-        Already have an account? <a href="/farmer-login">Login</a>
+        Already have an account? <a href="/login">Login</a>
       </p>
     </div>
   );

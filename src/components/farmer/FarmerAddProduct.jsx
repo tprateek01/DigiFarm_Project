@@ -16,7 +16,21 @@ const FarmerAddProduct = () => {
 
     // ✅ default TRUE (available)
     isAvailable: { value: true, hasError: false, errorMessage: "", style: "" },
+    productImage: { value: "", hasError: false, errorMessage: "", style: "" },
   });
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProducts(prev => ({
+          ...prev, productImage: { value: reader.result, hasError: false, errorMessage: "", style: "" }
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,7 +39,7 @@ const FarmerAddProduct = () => {
     const updated = { ...products };
 
     Object.keys(updated).forEach((key) => {
-      if (key === "isAvailable") return; // checkbox should not block submit
+      if (key === "isAvailable" || key === "productImage") return; // checkbox/image should not block submit
 
       const field = updated[key];
       if (field.value.toString().trim() === "") {
@@ -56,39 +70,43 @@ const FarmerAddProduct = () => {
       product_Qty: products.productQuantity.value,
       product_Unit: products.productUnit.value,
       product_Unitprice: products.unitPrice.value,
+      category: products.productCategory.value,
       product_Category: products.productCategory.value,
       fk_farmer_id: session.id,
-      farmerName: session.name,
+      farmerName: session.full_name || session.name,
+      farmerLocation: session.location || "N/A",
+      farmerMobile: session.mobile || session.phone || "N/A",
+      status: "pending",
       created_date: new Date().toString(),
       updated_date: null,
       is_image_uploaded: false,
-
-      // ✅ THIS FIXES YOUR BUG
       isAvailable: products.isAvailable.value,
+      image: products.productImage.value,
+    }, () => {
+      toast.success("Product added successfully");
+      navigate("/farmer/products");
     });
-
-    toast.success("Product added successfully");
-
-    setTimeout(() => {
-      navigate("/product_list");
-    }, 2000);
   };
 
   const updateField = (field, value) => {
-    setProducts((prev) => ({
-      ...prev,
-      [field]: {
-        value,
-        hasError: value.toString().trim() === "",
-        errorMessage: `${field} is required`,
-        style: "2px solid red",
-      },
-    }));
+    setProducts((prev) => {
+      const newState = {
+        ...prev,
+        [field]: {
+          ...prev[field],
+          value,
+          hasError: false,
+          errorMessage: "",
+          style: "",
+        },
+      };
+      return newState;
+    });
   };
 
   return (
-    <div className="container">
-      <button className="back" onClick={() => navigate('/farmer/dashboard')}>
+    <div className="auth-container" style={{maxWidth: "600px", margin: "40px auto"}}>
+      <button className="back" onClick={() => navigate('/farmer/dashboard')} style={{marginBottom: '15px'}}>
         Back to Dashboard
       </button>
 
@@ -96,64 +114,76 @@ const FarmerAddProduct = () => {
 
       <form onSubmit={handleSubmit}>
 
-        <label>Product Name</label>
-        <input
-          type="text"
-          value={products.productName.value}
-          style={{ border: products.productName.hasError ? products.productName.style : "" }}
-          onChange={(e) => updateField("productName", e.target.value)}
-        />
-        <span style={{ color: "red" }}>{products.productName.errorMessage}</span>
-
-        <label>Category</label>
-        <select
-          value={products.productCategory.value}
-          style={{ border: products.productCategory.hasError ? products.productCategory.style : "" }}
-          onChange={(e) => updateField("productCategory", e.target.value)}
-        >
-          <option value="">Select Category</option>
-          <option value="Grains">Grains</option>
-          <option value="Vegetables">Vegetables</option>
-          <option value="Fruits">Fruits</option>
-          <option value="Dairy">Dairy</option>
-          <option value="Pulses">Pulses</option>
-        </select>
-
-        <label>Quantity</label>
-        <input
-          type="number"
-          value={products.productQuantity.value}
-          style={{ border: products.productQuantity.hasError ? products.productQuantity.style : "" }}
-          onChange={(e) => updateField("productQuantity", e.target.value)}
-        />
-
-        <label>Quantity Unit</label>
-        <select
-          value={products.productUnit.value}
-          style={{ border: products.productUnit.hasError ? products.productUnit.style : "" }}
-          onChange={(e) => updateField("productUnit", e.target.value)}
-        >
-          <option value="">Select Unit</option>
-          <option value="Tonnes">Tonnes</option>
-          <option value="kg">Kilograms</option>
-          <option value="quintals">Quintals</option>
-        </select>
-
-        <label>Unit Price</label>
-        <input
-          type="number"
-          value={products.unitPrice.value}
-          style={{ border: products.unitPrice.hasError ? products.unitPrice.style : "" }}
-          onChange={(e) => updateField("unitPrice", e.target.value)}
-        />
-
-        <label>Product Image</label>
-        <input type="file" accept="image/*" />
-
-        <div className="form-check form-switch mb-3">
+        <div className="form-group">
+          <label>Product Name</label>
           <input
-            className="form-check-input"
+            type="text"
+            value={products.productName.value}
+            style={{ border: products.productName.hasError ? products.productName.style : "" }}
+            onChange={(e) => updateField("productName", e.target.value)}
+          />
+          <span style={{ color: "red", fontSize: '0.85em' }}>{products.productName.errorMessage}</span>
+        </div>
+
+        <div className="form-group">
+          <label>Category</label>
+          <select
+            value={products.productCategory.value}
+            style={{ border: products.productCategory.hasError ? products.productCategory.style : "", width: "100%", padding: "10px", borderRadius: "5px" }}
+            onChange={(e) => updateField("productCategory", e.target.value)}
+          >
+            <option value="">Select Category</option>
+            <option value="Grains">Grains</option>
+            <option value="Vegetables">Vegetables</option>
+            <option value="Fruits">Fruits</option>
+            <option value="Dairy">Dairy</option>
+            <option value="Pulses">Pulses</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Quantity</label>
+          <input
+            type="number"
+            value={products.productQuantity.value}
+            style={{ border: products.productQuantity.hasError ? products.productQuantity.style : "" }}
+            onChange={(e) => updateField("productQuantity", e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Quantity Unit</label>
+          <select
+            value={products.productUnit.value}
+            style={{ border: products.productUnit.hasError ? products.productUnit.style : "", width: "100%", padding: "10px", borderRadius: "5px" }}
+            onChange={(e) => updateField("productUnit", e.target.value)}
+          >
+            <option value="">Select Unit</option>
+            <option value="Tonnes">Tonnes</option>
+            <option value="kg">Kilograms</option>
+            <option value="quintals">Quintals</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Unit Price (₹)</label>
+          <input
+            type="number"
+            value={products.unitPrice.value}
+            style={{ border: products.unitPrice.hasError ? products.unitPrice.style : "" }}
+            onChange={(e) => updateField("unitPrice", e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Product Image</label>
+          <input type="file" accept="image/*" onChange={handleImageChange} />
+        </div>
+
+        <div className="form-group" style={{display: 'flex', alignItems: 'center', gap: '10px', clear: 'both'}}>
+          <input
             type="checkbox"
+            style={{ width: "auto", margin: 0, padding: 0, display: 'inline-block', float: 'none' }}
             checked={products.isAvailable.value}
             onChange={(e) =>
               setProducts((prev) => ({
@@ -162,10 +192,10 @@ const FarmerAddProduct = () => {
               }))
             }
           />
-          <label>Available for Sale</label>
+          <label style={{margin: 0, display: 'inline-block'}}>Available for Sale</label>
         </div>
 
-        <button type="submit">Add Product</button>
+        <button type="submit" style={{width: "100%"}}>Add Product</button>
 
       </form>
     </div>

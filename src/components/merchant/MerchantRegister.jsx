@@ -19,6 +19,9 @@ const MerchantRegister = () => {
     confirmPassword: '',
     companyType: '',
     reg_no: '',
+    aadhar_no: '',
+    id_proof: '',
+    profileImage: '',
     checkbox: ''
   });
 
@@ -30,6 +33,8 @@ const MerchantRegister = () => {
   const inputConfirmPasswordRef = useRef(null);
   const inputMobileRef = useRef(null);
   const inputRegNoRef = useRef(null);
+  const inputAadharRef = useRef(null);
+  const inputIdProofRef = useRef(null);
   const checkBoxTermsRef = useRef(null);
   const btnSubmitRef = useRef(null);
 
@@ -42,6 +47,8 @@ const MerchantRegister = () => {
   const errorPasswordRef = useRef(null);
   const errorConfirmPasswordRef = useRef(null);
   const errorRegNoRef = useRef(null);
+  const errorAadharRef = useRef(null);
+  const errorIdProofRef = useRef(null);
   const errorCompanyTypeRef = useRef(null);
 
   const navigate = useNavigate();
@@ -63,12 +70,35 @@ const MerchantRegister = () => {
       mobile: [errorMobileRef, inputMobileRef],
       password: [errorPasswordRef, inputPasswordRef],
       confirmPassword: [errorConfirmPasswordRef, inputConfirmPasswordRef],
-      reg_no: [errorRegNoRef, inputRegNoRef]
+      reg_no: [errorRegNoRef, inputRegNoRef],
+      aadhar_no: [errorAadharRef, inputAadharRef]
     };
 
     if (fieldMap[e.target.name]) {
       fieldMap[e.target.name][0].current.textContent = '';
       fieldMap[e.target.name][1].current.style.border = '';
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUserData((prev) => ({ ...prev, id_proof: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleProfileImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUserData((prev) => ({ ...prev, profileImage: reader.result }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -148,6 +178,23 @@ const MerchantRegister = () => {
       isValid = false;
     } else clearError(errorRegNoRef, inputRegNoRef);
 
+    const aadharRegex = /^\d{12}$/;
+    if (inputAadharRef.current.value.trim() === "") {
+      setError(errorAadharRef, "Aadhar number is required", inputAadharRef);
+      isValid = false;
+    } else if (!aadharRegex.test(inputAadharRef.current.value.trim())) {
+      setError(errorAadharRef, "Invalid 12-digit Aadhar number", inputAadharRef);
+      isValid = false;
+    } else clearError(errorAadharRef, inputAadharRef);
+
+    if (!userData.id_proof) {
+      errorIdProofRef.current.textContent = "ID Proof is required";
+      errorIdProofRef.current.style.color = "red";
+      isValid = false;
+    } else {
+      errorIdProofRef.current.textContent = "";
+    }
+
     if (!checkBoxTermsRef.current.checked) {
       alert("Please accept the terms and conditions");
       isValid = false;
@@ -161,13 +208,16 @@ const MerchantRegister = () => {
     }
 
     const merchantData = {
-      name: inputFirstNameRef.current.value.trim() + " " + inputLastNameRef.current.value.trim(),
+      full_name: inputFirstNameRef.current.value.trim() + " " + inputLastNameRef.current.value.trim(),
       companyName: inputCompanyNameRef.current.value.trim(),
+      company_type: userData.companyType,
       email: inputEmailRef.current.value.trim(),
       mobile: inputMobileRef.current.value.trim(),
       password: inputPasswordRef.current.value.trim(),
-      companyType: userData.companyType,
-      registrationNo: inputRegNoRef.current.value.trim(),
+      reg_no: inputRegNoRef.current.value.trim(),
+      aadhar_no: inputAadharRef.current.value.trim(),
+      id_proof: userData.id_proof,
+      profileImage: userData.profileImage,
       role: "merchant",
       otp_token: otpToken
     };
@@ -189,7 +239,7 @@ const MerchantRegister = () => {
       setOtpRequested(true);
       setOtpVerified(false);
       setOtpToken("");
-      alert("OTP sent to your email (check backend console in this project).");
+      alert("OTP sent successfully. Please check your email.");
     } catch (e) {
       alert(e?.message || "Failed to send OTP");
     } finally {
@@ -264,7 +314,7 @@ const MerchantRegister = () => {
               type="button"
               onClick={requestOtp}
               disabled={otpLoading}
-              style={{ whiteSpace: "nowrap" }}
+              style={{ whiteSpace: "nowrap", marginTop: 0 }}
             >
               {otpRequested ? "Resend OTP" : "Send OTP"}
             </button>
@@ -279,7 +329,7 @@ const MerchantRegister = () => {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
               />
-              <button type="button" onClick={verifyOtp} disabled={otpLoading}>
+              <button type="button" onClick={verifyOtp} disabled={otpLoading} style={{ marginTop: 0 }}>
                 Verify
               </button>
               {otpVerified && (
@@ -310,17 +360,11 @@ const MerchantRegister = () => {
         </div>
 
         <label>Type of Company:</label>
-        <div className="form-group">
-          <input type="radio" name="companyType" value="Proprietorship" onChange={handleChange} /> Proprietorship
-        </div>
-        <div className="form-group">
-          <input type="radio" name="companyType" value="LLP" onChange={handleChange} /> LLP
-        </div>
-        <div className="form-group">
-          <input type="radio" name="companyType" value="Private Limited" onChange={handleChange} /> Private Limited
-        </div>
-        <div className="form-group">
-          <input type="radio" name="companyType" value="Public" onChange={handleChange} /> Public
+        <div style={{ display: "flex", gap: "15px", flexWrap: "wrap", marginBottom: "15px" }}>
+          <div><input type="radio" name="companyType" value="Proprietorship" onChange={handleChange} /> Proprietorship</div>
+          <div><input type="radio" name="companyType" value="LLP" onChange={handleChange} /> LLP</div>
+          <div><input type="radio" name="companyType" value="Private Limited" onChange={handleChange} /> Private Limited</div>
+          <div><input type="radio" name="companyType" value="Public" onChange={handleChange} /> Public</div>
         </div>
         <span ref={errorCompanyTypeRef}></span>
 
@@ -331,13 +375,30 @@ const MerchantRegister = () => {
         </div>
 
         <div className="form-group">
+          <label>Aadhar No:</label>
+          <input name="aadhar_no" type="number" value={userData.aadhar_no} onChange={handleChange} ref={inputAadharRef} />
+          <span ref={errorAadharRef}></span>
+        </div>
+
+        <div className="form-group">
+          <label>ID Proof (Upload File):</label>
+          <input name="id_proof" type="file" accept="image/*,.pdf" onChange={handleFileChange} ref={inputIdProofRef} />
+          <span ref={errorIdProofRef}></span>
+        </div>
+
+        <div className="form-group">
+          <label>Profile Image:</label>
+          <input type="file" accept="image/*" onChange={handleProfileImageChange} />
+        </div>
+
+        <div className="form-group">
            <table><tr><th><input type="checkbox" name="checkbox" onChange={handleChange} ref={checkBoxTermsRef} /></th>
           <th><label>I accept the terms and conditions</label></th></tr></table>
         </div>
 
         <button type="submit" ref={btnSubmitRef}>Register</button>
       </form>
-      <p>Already have an account? <a href="/merchant-login">Login</a></p>
+      <p>Already have an account? <a href="/login">Login</a></p>
     </div>
   );
 };

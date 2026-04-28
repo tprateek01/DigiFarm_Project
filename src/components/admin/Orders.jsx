@@ -26,6 +26,16 @@ const Orders = () => {
     }
   };
 
+  const handleStatusUpdate = async (id, status, extraData = {}) => {
+    try {
+      await userApiService.updateOrderStatus(id, status, extraData);
+      fetchOrders();
+    } catch (err) {
+      console.error("Failed to update status:", err);
+      alert("Failed to update status");
+    }
+  };
+
   return (
     <div className="orders-mgmt-container">
       <div className="header-flex">
@@ -41,6 +51,7 @@ const Orders = () => {
             <th>Farmer</th>
             <th>Merchant</th>
             <th>Total Price</th>
+            <th>Sample Status</th>
             <th>Status</th>
             <th>Payment</th>
             <th>Action</th>
@@ -55,6 +66,11 @@ const Orders = () => {
               <td>{order.merchant_name}</td>
               <td className="price-text">₹{order.totalPrice}</td>
               <td>
+                <span className={`status-pill ${order.sample_status || 'none'}`}>
+                  {order.sample_status === 'none' ? 'N/A' : order.sample_status}
+                </span>
+              </td>
+              <td>
                 <span className={`status-pill ${order.status}`}>
                   {order.status}
                 </span>
@@ -65,9 +81,29 @@ const Orders = () => {
                 </span>
               </td>
               <td>
-                <button className="delete-btn" onClick={() => handleDelete(order.id)}>
-                  Remove
-                </button>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                  {order.status === "accepted" && order.payment_status === "paid" && (
+                    <button 
+                      className="status-btn dispatch" 
+                      onClick={() => handleStatusUpdate(order.id, "dispatched")}
+                      style={{ backgroundColor: '#2e7d32', color: 'white', padding: '5px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      Dispatch
+                    </button>
+                  )}
+                  {order.status === "dispatched" && (
+                    <button 
+                      className="status-btn deliver" 
+                      onClick={() => handleStatusUpdate(order.id, "delivered")}
+                      style={{ backgroundColor: '#1b5e20', color: 'white', padding: '5px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      Deliver
+                    </button>
+                  )}
+                  <button className="delete-btn" onClick={() => handleDelete(order.id)} style={{ color: 'maroon', backgroundColor: '#ffebee', padding: '5px 10px', border: '1px solid maroon', borderRadius: '4px' }}>
+                    Remove
+                  </button>
+                </div>
               </td>
             </tr>
           ))}

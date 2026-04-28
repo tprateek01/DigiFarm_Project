@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { userApiService } from "../../api/userApi";
 import "../../styles/merchant/merchantsettings.css";
 
 const MerchantSettings = () => {
@@ -45,20 +46,24 @@ const MerchantSettings = () => {
       cname: session.companyName || "",
       email: session.email || "",
       mobile: session.mobile || "",
-      companyType: session.companyType || "",
-      reg_no: session.registrationNo || ""
+      companyType: session.company_type || session.companyType || "",
+      reg_no: session.reg_no || session.registrationNo || ""
     });
   }, [navigate]);
 
   const setError = (ref, message, inputRef) => {
-    ref.current.textContent = message;
-    ref.current.style.color = "red";
-    inputRef.current.style.border = "2px solid red";
+    if (ref.current) {
+      ref.current.textContent = message;
+      ref.current.style.color = "red";
+    }
+    if (inputRef.current) {
+      inputRef.current.style.border = "2px solid red";
+    }
   };
 
   const clearError = (ref, inputRef) => {
-    ref.current.textContent = "";
-    inputRef.current.style.border = "";
+    if (ref.current) ref.current.textContent = "";
+    if (inputRef.current) inputRef.current.style.border = "";
   };
 
   const handleChange = (e) => {
@@ -69,7 +74,7 @@ const MerchantSettings = () => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
   };
 
-  const saveProfile = (e) => {
+  const saveProfile = async (e) => {
     e.preventDefault();
     let isValid = true;
 
@@ -84,7 +89,32 @@ const MerchantSettings = () => {
     } else clearError(errorCnameRef, inputCompanyNameRef);
 
     if (isValid) {
-      alert("Business profile updated successfully!");
+      try {
+        const session = JSON.parse(localStorage.getItem("session_data"));
+        const updatedData = {
+          full_name: userData.fname + " " + userData.lname,
+          companyName: userData.cname,
+          company_type: userData.companyType,
+          mobile: userData.mobile,
+          reg_no: userData.reg_no
+        };
+
+        const res = await userApiService.patchUser(session.id, updatedData);
+        
+        const newSession = {
+          ...session,
+          name: res.full_name,
+          companyName: res.companyName,
+          company_type: res.company_type,
+          mobile: res.mobile,
+          reg_no: res.reg_no
+        };
+        localStorage.setItem("session_data", JSON.stringify(newSession));
+        alert("Business profile updated successfully!");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update profile.");
+      }
     }
   };
 
@@ -115,9 +145,23 @@ const MerchantSettings = () => {
               <span className="mset-error-text" ref={errorCnameRef}></span>
             </div>
             <div className="mset-input-control">
+              <label>Company Type</label>
+              <select name="companyType" value={userData.companyType} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}>
+                <option value="">Select Company Type</option>
+                <option value="Proprietorship">Proprietorship</option>
+                <option value="LLP">LLP</option>
+                <option value="Private Limited">Private Limited</option>
+                <option value="Public">Public</option>
+              </select>
+            </div>
+            <div className="mset-input-control">
               <label>Contact Mobile</label>
               <input name="mobile" type="number" value={userData.mobile} onChange={handleChange} ref={inputMobileRef} />
               <span className="mset-error-text" ref={errorMobileRef}></span>
+            </div>
+            <div className="mset-input-control">
+              <label>Registration No.</label>
+              <input name="reg_no" value={userData.reg_no} onChange={handleChange} />
             </div>
           </div>
           <button className="mset-update-button" onClick={saveProfile}>Save Business Info</button>

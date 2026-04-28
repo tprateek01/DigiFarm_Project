@@ -105,6 +105,52 @@ body, html {
   accent-color: #4a7a2f;
 }
 
+/* City Suggestions */
+.city-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #cbd5e0;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.city-suggestions li {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.city-suggestions li:hover {
+  background: #f0f4f0;
+  color: #2f5233;
+}
+
+.form-group-settings {
+  margin-bottom: 1rem;
+}
+
+.form-group-settings label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.4rem;
+}
+
+.form-group-settings input {
+  margin-bottom: 0 !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .settings-wrapper {
