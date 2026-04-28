@@ -1,3 +1,7 @@
+// Load environment variables immediately at the start with override
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env"), override: true });
+
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -5,11 +9,17 @@ const nodemailer = require("nodemailer");
 const passport = require("passport");
 const session = require("express-session");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const path = require("path");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
-// Load dotenv from the same folder or current working directory
-require("dotenv").config();
+
+// Debug logs to verify env variables are loaded
+console.log("Checking Environment Variables...");
+console.log("- MONGODB_URI:", process.env.MONGODB_URI ? "Found" : "Missing");
+console.log("- RAZORPAY_KEY_ID:", process.env.RAZORPAY_KEY_ID ? `Found (${process.env.RAZORPAY_KEY_ID})` : "Missing");
+console.log("- RAZORPAY_KEY_SECRET:", process.env.RAZORPAY_KEY_SECRET ? "Found" : "Missing");
+console.log("- SMTP_USER:", process.env.SMTP_USER ? "Found" : "Missing");
+console.log("- SMTP_PASS:", process.env.SMTP_PASS ? "Found" : "Missing");
+console.log("- GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "Found" : "Missing");
 
 let razorpay;
 if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
@@ -50,6 +60,7 @@ async function getNextId(modelName) {
 }
 
 const app = express();
+app.set("trust proxy", 1); // Trust Render's proxy for sessions/OAuth
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
@@ -109,8 +120,8 @@ async function sendOtpEmail(email, otp, purpose) {
 
 // ------ Google Auth ------
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID || "PASTE_YOUR_GOOGLE_CLIENT_ID_HERE",
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET || "PASTE_YOUR_GOOGLE_CLIENT_SECRET_HERE",
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/auth/google/callback"
   },
   async function(accessToken, refreshToken, profile, cb) {

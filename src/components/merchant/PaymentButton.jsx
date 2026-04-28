@@ -19,7 +19,7 @@ export default function PaymentButton({ amount, orderData, onSuccess, buttonText
 
       // 2. Open Razorpay Checkout
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID || "rzp_test_Sd7ViIGw2MM9Ik", // Use env var or fallback
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID || "rzp_test_SixvJvH7Nszr03", // Use env var or fallback to current key
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         name: "DigiFarm",

@@ -157,3 +157,6 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 >>>>>>> 527ec7bcbcbe8000e07d88a4421109c0f897d85d
+"*.exe" 
+"digifarm_backup/" 
+"*.zip" 
