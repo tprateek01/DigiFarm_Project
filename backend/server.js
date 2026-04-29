@@ -105,28 +105,34 @@ mongoose.connect(mongoURI)
 
 // Nodemailer Real Setup
 // Nodemailer Real Setup (Restored from working old version)
+// Nodemailer Real Setup (Optimized for Render/Gmail)
 let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false, // Must be false for Port 587
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS // Reverted: removing the .replace() logic which might be mangling your password
-    }
+      pass: process.env.SMTP_PASS
+    },
+    tls: {
+      // This helps bypass issues where Render's network can't 
+      // verify the specific handshake certificate immediately
+      rejectUnauthorized: false 
+    },
+    connectionTimeout: 10000, // Wait up to 10s for connection
   });
   
-  // Keep the verification log to see if it connects on startup
   transporter.verify().then(() => {
-    console.log("SMTP Server is ready to take messages");
+    console.log("SMTP Server is ready to take messages (Port 587)");
   }).catch(err => {
-    console.error("SMTP PRE-VERIFICATION FAILED:", err.message);
+    console.error("SMTP PRE-VERIFICATION FAILED (Port 587):", err.message);
   });
 
   console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER);
 } else {
-  console.log("SMTP_USER and SMTP_PASS not found in .env. Falling back to console logging.");
+  console.log("SMTP_USER and SMTP_PASS not found in .env.");
   transporter = null;
 }
 
