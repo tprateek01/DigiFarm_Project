@@ -2,6 +2,12 @@
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env"), override: true });
 
+// Force IPv4 resolution to avoid ENETUNREACH on IPv6-only routes (common on Render)
+const dns = require("dns");
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
+
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -86,23 +92,16 @@ mongoose.connect(mongoURI)
 let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // use STARTTLS
-    family: 4, // Force IPv4 to avoid ENETUNREACH on IPv6
+    service: 'gmail',
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
     },
     tls: {
-      // Do not fail on invalid certs
       rejectUnauthorized: false
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000
+    }
   });
-  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (Port 587)");
+  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (using service shortcut)");
 } else {
   console.log("SMTP_USER and SMTP_PASS not found in .env. Falling back to console logging.");
   transporter = null;
