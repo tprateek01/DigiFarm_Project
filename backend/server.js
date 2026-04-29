@@ -92,22 +92,38 @@ mongoose.connect(mongoURI)
 let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
-    pool: true,
-    host: '173.194.76.109', // IPv4 address of smtp.gmail.com (resolved manually to avoid IPv6 ENETUNREACH)
-    port: 465,
-    secure: true,
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // Use STARTTLS
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
     },
     tls: {
-      servername: 'smtp.gmail.com',
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+      minVersion: 'TLSv1.2'
     },
-    connectionTimeout: 10000,
-    socketTimeout: 10000
+    // Force IPv4 lookup for this transporter specifically
+    lookup: (hostname, options, callback) => {
+      dns.lookup(hostname, { family: 4 }, callback);
+    },
+    connectionTimeout: 15000, // Increased to 15s
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
+    debug: true, // Enable debug output in logs
+    logger: true // Log SMTP traffic
   });
-  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (using IPv4 address)");
+
+  // Verify connection on startup
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error("SMTP Verification Error:", error);
+    } else {
+      console.log("SMTP Server is ready to take messages");
+    }
+  });
+
+  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (Port 587 + IPv4 Force)");
 } else {
   console.log("SMTP_USER and SMTP_PASS not found in .env. Falling back to console logging.");
   transporter = null;
