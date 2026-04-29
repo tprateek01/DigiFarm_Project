@@ -107,32 +107,35 @@ mongoose.connect(mongoURI)
 // Nodemailer Real Setup (Restored from working old version)
 // Nodemailer Real Setup (Optimized for Render/Gmail)
 // Nodemailer Real Setup (Fixed for Cloud/Render Environments)
+// Nodemailer Real Setup (Fixed for Render Network)
 let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587, // Changed from 465 to 587
-    secure: false, // Must be false for port 587
+    port: 587,
+    secure: false, // Required for Port 587
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS.trim() // Ensure no accidental spaces
+      pass: process.env.SMTP_PASS.trim()
     },
     tls: {
-      // Helps bypass handshake issues caused by cloud network proxies
-      rejectUnauthorized: false 
-    }
+      rejectUnauthorized: false,
+      minVersion: 'TLSv1.2'
+    },
+    connectionTimeout: 10000, // 10 seconds timeout
   });
 
-  // Verify connection on startup to catch errors immediately
+  // Verify connection on startup
   transporter.verify().then(() => {
-    console.log("SMTP Server is ready to take messages (Port 587)");
+    console.log("✅ SMTP Server is ready to take messages (Port 587)");
   }).catch(err => {
-    console.error("SMTP PRE-VERIFICATION FAILED:", err.message);
+    console.error("❌ SMTP PRE-VERIFICATION FAILED:", err.message);
+    console.log("Check if your App Password is correct in Render Dashboard.");
   });
 
   console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER);
 } else {
-  console.log("SMTP_USER and SMTP_PASS not found in .env. Falling back to console logging.");
+  console.log("SMTP_USER and SMTP_PASS not found in .env.");
   transporter = null;
 }
 
