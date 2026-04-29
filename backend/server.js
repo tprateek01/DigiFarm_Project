@@ -108,29 +108,35 @@ mongoose.connect(mongoURI)
 // Nodemailer Real Setup (Optimized for Render/Gmail)
 // Nodemailer Real Setup (Fixed for Cloud/Render Environments)
 // Nodemailer Real Setup (Fixed for Render Network)
+// Nodemailer Real Setup (Hardcoded IPv4 Workaround for Render)
 let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Required for Port 587
+    // Direct IPv4 address for smtp.gmail.com to bypass DNS/IPv6 issues
+    host: '142.250.114.108', 
+    port: 465,
+    secure: true, // Use SSL
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS.trim()
+      // Ensure the App Password is clean of any accidental whitespace
+      pass: process.env.SMTP_PASS.replace(/\s/g, "") 
     },
     tls: {
-      rejectUnauthorized: false,
-      minVersion: 'TLSv1.2'
+      // servername is REQUIRED when using an IP address with SSL
+      servername: 'smtp.gmail.com', 
+      rejectUnauthorized: false
     },
-    connectionTimeout: 10000, // 10 seconds timeout
+    connectionTimeout: 15000, // 15 seconds
+    greetingTimeout: 15000,
+    socketTimeout: 15000
   });
 
   // Verify connection on startup
   transporter.verify().then(() => {
-    console.log("✅ SMTP Server is ready to take messages (Port 587)");
+    console.log("✅ SMTP Server is ready (Hardcoded IPv4)");
   }).catch(err => {
-    console.error("❌ SMTP PRE-VERIFICATION FAILED:", err.message);
-    console.log("Check if your App Password is correct in Render Dashboard.");
+    console.error("❌ SMTP PRE-VERIFICATION FAILED (IPv4):", err.message);
+    console.warn("If this times out, Render's firewall is blocking all SMTP traffic.");
   });
 
   console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER);
