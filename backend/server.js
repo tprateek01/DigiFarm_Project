@@ -93,31 +93,32 @@ let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false, // Must be false for 587
+    requireTLS: true, // Use STARTTLS
     family: 4, // Force IPv4
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
+      pass: process.env.SMTP_PASS // Ensure no spaces in App Password
     },
     tls: {
       rejectUnauthorized: false,
       servername: 'smtp.gmail.com'
     },
-    connectionTimeout: 20000, // Increased timeout
+    connectionTimeout: 20000,
     socketTimeout: 20000,
     greetingTimeout: 20000
   });
 
   // Verify connection on startup
   transporter.verify().then(() => {
-    console.log("SMTP Server is ready to take messages");
+    console.log("SMTP Server is ready to take messages (Port 587)");
   }).catch(err => {
-    console.error("SMTP PRE-VERIFICATION FAILED (Port 465):", err.message);
-    console.warn("If the error is ETIMEDOUT or ENETUNREACH, check your Gmail App Password and network settings.");
+    console.error("SMTP PRE-VERIFICATION FAILED (Port 587):", err.message);
+    console.warn("If ETIMEDOUT persists, Render's firewall is likely blocking all SMTP traffic.");
   });
 
-  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (Port 465 + IPv4 Force)");
+  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (Port 587 + STARTTLS + IPv4 Force)");
 } else {
   console.log("SMTP_USER and SMTP_PASS not found in .env. Falling back to console logging.");
   transporter = null;
