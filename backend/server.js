@@ -106,53 +106,45 @@ mongoose.connect(mongoURI)
 // Nodemailer Real Setup
 // Nodemailer Real Setup (Restored from working old version)
 // Nodemailer Real Setup (Optimized for Render/Gmail)
+// Nodemailer Real Setup (Fixed for Cloud/Render Environments)
 let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Must be false for Port 587
+    port: 587, // Changed from 465 to 587
+    secure: false, // Must be false for port 587
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
+      pass: process.env.SMTP_PASS.trim() // Ensure no accidental spaces
     },
     tls: {
-      // This helps bypass issues where Render's network can't 
-      // verify the specific handshake certificate immediately
+      // Helps bypass handshake issues caused by cloud network proxies
       rejectUnauthorized: false 
-    },
-    connectionTimeout: 10000, // Wait up to 10s for connection
+    }
   });
-  
+
+  // Verify connection on startup to catch errors immediately
   transporter.verify().then(() => {
     console.log("SMTP Server is ready to take messages (Port 587)");
   }).catch(err => {
-    console.error("SMTP PRE-VERIFICATION FAILED (Port 587):", err.message);
+    console.error("SMTP PRE-VERIFICATION FAILED:", err.message);
   });
 
   console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER);
 } else {
-  console.log("SMTP_USER and SMTP_PASS not found in .env.");
+  console.log("SMTP_USER and SMTP_PASS not found in .env. Falling back to console logging.");
   transporter = null;
 }
 
 async function sendOtpEmail(email, otp, purpose) {
-  // Always log the OTP to the console first as a fail-safe
-  console.log(`\n-----------------------------------------`);
-  console.log(`[FAIL-SAFE OTP LOG]`);
-  console.log(`Email: ${email}`);
-  console.log(`Purpose: ${purpose}`);
-  console.log(`OTP Code: ${otp}`);
-  console.log(`-----------------------------------------\n`);
-
   if (!transporter) {
-    console.warn("SMTP NOT CONFIGURED. Use the code from the console above.");
-    return; // Don't throw, allow user to use console OTP
+    // Log for local development if transporter is null
+    console.log(`[LOCAL OTP] Email: ${email}, OTP: ${otp}`);
+    return;
   }
-
   try {
     await transporter.sendMail({
-      from: `"DigiFarm" <${process.env.SMTP_USER}>`,
+      from: `"DigiFarm" <${process.env.SMTP_USER}>`, // Use authenticated user here
       to: email,
       subject: `DigiFarm ${purpose} OTP`,
       text: `Your OTP for ${purpose} is: ${otp}. It expires in 10 minutes.`,
@@ -160,9 +152,7 @@ async function sendOtpEmail(email, otp, purpose) {
     console.log(`Sent Real Email OTP to ${email}`);
   } catch (err) {
     console.error("Failed sending email: ", err);
-    // Even if it fails, the OTP was logged to the console at the top of this function.
-    // We throw a clear error for the frontend to show to the user.
-    throw new Error(`Email delivery failed. Please check server logs for your OTP code or verify your App Password.`);
+    throw new Error("Failed to dispatch email. Check logs or verify App Password.");
   }
 }
 
