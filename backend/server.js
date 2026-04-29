@@ -104,35 +104,27 @@ mongoose.connect(mongoURI)
   .catch(err => console.error('MongoDB connection error', err));
 
 // Nodemailer Real Setup
+// Nodemailer Real Setup (Restored from working old version)
 let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-  // Hardcode Gmail's primary IPv4 to bypass DNS/IPv6 issues on Render
-  // Gmail SMTP IPv4: 142.250.114.108 or 142.251.10.108
   transporter = nodemailer.createTransport({
-    host: '142.250.114.108', 
+    host: 'smtp.gmail.com',
     port: 465,
     secure: true,
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS.replace(/\s/g, "")
-    },
-    tls: {
-      servername: 'smtp.gmail.com', // MUST match Gmail's cert
-      rejectUnauthorized: false
-    },
-    connectionTimeout: 15000,
-    socketTimeout: 15000
+      pass: process.env.SMTP_PASS // Reverted: removing the .replace() logic which might be mangling your password
+    }
   });
-
-  // Verify connection on startup
+  
+  // Keep the verification log to see if it connects on startup
   transporter.verify().then(() => {
-    console.log("SMTP Server is ready to take messages (Hardcoded IPv4)");
+    console.log("SMTP Server is ready to take messages");
   }).catch(err => {
-    console.error("SMTP PRE-VERIFICATION FAILED (IPv4):", err.message);
-    console.warn("If ETIMEDOUT persists, Render's firewall is blocking all SMTP traffic.");
+    console.error("SMTP PRE-VERIFICATION FAILED:", err.message);
   });
 
-  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (Hardcoded IPv4)");
+  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER);
 } else {
   console.log("SMTP_USER and SMTP_PASS not found in .env. Falling back to console logging.");
   transporter = null;
