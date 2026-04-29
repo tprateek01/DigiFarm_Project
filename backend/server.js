@@ -93,25 +93,18 @@ let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Use STARTTLS
+    port: 465,
+    secure: true, // SSL/TLS
+    family: 4, // Force IPv4
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
     },
     tls: {
-      rejectUnauthorized: false,
-      minVersion: 'TLSv1.2'
+      rejectUnauthorized: false
     },
-    // Force IPv4 lookup for this transporter specifically
-    lookup: (hostname, options, callback) => {
-      dns.lookup(hostname, { family: 4 }, callback);
-    },
-    connectionTimeout: 15000, // Increased to 15s
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
-    debug: true, // Enable debug output in logs
-    logger: true // Log SMTP traffic
+    connectionTimeout: 10000,
+    socketTimeout: 10000
   });
 
   // Verify connection on startup
@@ -123,7 +116,7 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     }
   });
 
-  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (Port 587 + IPv4 Force)");
+  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (Port 465 + IPv4)");
 } else {
   console.log("SMTP_USER and SMTP_PASS not found in .env. Falling back to console logging.");
   transporter = null;
