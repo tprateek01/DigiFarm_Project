@@ -92,16 +92,22 @@ mongoose.connect(mongoURI)
 let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
-    service: 'gmail',
+    pool: true,
+    host: '173.194.76.109', // IPv4 address of smtp.gmail.com (resolved manually to avoid IPv6 ENETUNREACH)
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
     },
     tls: {
+      servername: 'smtp.gmail.com',
       rejectUnauthorized: false
-    }
+    },
+    connectionTimeout: 10000,
+    socketTimeout: 10000
   });
-  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (using service shortcut)");
+  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (using IPv4 address)");
 } else {
   console.log("SMTP_USER and SMTP_PASS not found in .env. Falling back to console logging.");
   transporter = null;
