@@ -6,6 +6,21 @@ require("dotenv").config({ path: path.join(__dirname, ".env"), override: true })
 const dns = require("dns");
 if (dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder("ipv4first");
+} else {
+  // Fallback for older Node.js versions
+  const originalLookup = dns.lookup;
+  dns.lookup = (hostname, options, callback) => {
+    if (typeof options === 'function') {
+      callback = options;
+      options = { family: 4 };
+    } else if (typeof options === 'number') {
+      options = { family: options };
+    } else {
+      options = options || {};
+      options.family = 4;
+    }
+    return originalLookup(hostname, options, callback);
+  };
 }
 
 const express = require("express");
@@ -91,34 +106,26 @@ mongoose.connect(mongoURI)
 // Nodemailer Real Setup
 let transporter;
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+  // Use the most basic Gmail service configuration as it often handles 
+  // the port/secure/TLS dance better than manual settings.
   transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Must be false for 587
-    requireTLS: true, // Use STARTTLS
-    family: 4, // Force IPv4
+    service: 'gmail',
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS // Ensure no spaces in App Password
-    },
-    tls: {
-      rejectUnauthorized: false,
-      servername: 'smtp.gmail.com'
-    },
-    connectionTimeout: 20000,
-    socketTimeout: 20000,
-    greetingTimeout: 20000
+      // Ensure no spaces in the App Password (common issue)
+      pass: process.env.SMTP_PASS.replace(/\s/g, "")
+    }
   });
 
   // Verify connection on startup
   transporter.verify().then(() => {
-    console.log("SMTP Server is ready to take messages (Port 587)");
+    console.log("SMTP Server is ready to take messages (Gmail Service)");
   }).catch(err => {
-    console.error("SMTP PRE-VERIFICATION FAILED (Port 587):", err.message);
-    console.warn("If ETIMEDOUT persists, Render's firewall is likely blocking all SMTP traffic.");
+    console.error("SMTP PRE-VERIFICATION FAILED:", err.message);
+    console.warn("If ETIMEDOUT persists, Render's firewall is likely blocking the connection.");
   });
 
-  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (Port 587 + STARTTLS + IPv4 Force)");
+  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (Gmail Service)");
 } else {
   console.log("SMTP_USER and SMTP_PASS not found in .env. Falling back to console logging.");
   transporter = null;
@@ -148,10 +155,9 @@ async function sendOtpEmail(email, otp, purpose) {
     console.log(`Sent Real Email OTP to ${email}`);
   } catch (err) {
     console.error("Failed sending email: ", err);
-    
-    // We only throw if it's critical, but for now let's keep it throwing to notify the UI
-    // however, we'll make the error message more helpful.
-    throw new Error(`Email delivery failed. Please check server logs for your OTP code or check your App Password.`);
+    // Even if it fails, the OTP was logged to the console at the top of this function.
+    // We throw a clear error for the frontend to show to the user.
+    throw new Error(`Email delivery failed. Please check server logs for your OTP code or verify your App Password.`);
   }
 }
 
