@@ -89,9 +89,14 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     host: 'smtp.gmail.com',
     port: 465,
     secure: true,
+    family: 4, // Force IPv4 to avoid ENETUNREACH on IPv6 (common on some networks/platforms)
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
+    },
+    tls: {
+      // Do not fail on invalid certs
+      rejectUnauthorized: false
     }
   });
   console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER);
@@ -106,7 +111,7 @@ async function sendOtpEmail(email, otp, purpose) {
   }
   try {
     await transporter.sendMail({
-      from: '"DigiFarm" <noreply@digifarm.local>',
+      from: `"DigiFarm" <${process.env.SMTP_USER}>`,
       to: email,
       subject: `DigiFarm ${purpose} OTP`,
       text: `Your OTP for ${purpose} is: ${otp}. It expires in 10 minutes.`,
@@ -114,7 +119,7 @@ async function sendOtpEmail(email, otp, purpose) {
     console.log(`Sent Real Email OTP to ${email}`);
   } catch (err) {
     console.error("Failed sending email: ", err);
-    throw new Error("Failed to dispatch email. Please check your App Password or Internet connection.");
+    throw new Error(`Failed to dispatch email: ${err.message || "Please check your App Password or Internet connection."}`);
   }
 }
 

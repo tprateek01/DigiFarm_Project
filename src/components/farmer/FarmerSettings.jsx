@@ -13,9 +13,6 @@ export default function FarmerSettings() {
     location: ""
   });
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [citySuggestions, setCitySuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [notifications, setNotifications] = useState({
@@ -159,141 +156,9 @@ export default function FarmerSettings() {
       {/* Password Section */}
       <section className="settings-section">
         <h3>Change Password</h3>
-        <div style={{ position: "relative", marginBottom: "15px" }}>
-          <input 
-            type={showCurrentPassword ? "text" : "password"} 
-            name="current" 
-            value={passwords.current} 
-            onChange={handlePasswordChange} 
-            placeholder="Current Password" 
-            style={{ width: "100%", paddingRight: "40px" }}
-          />
-          <button
-             type="button"
-             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-             style={{
-               position: "absolute",
-               right: "10px",
-               top: "50%",
-               transform: "translateY(-50%)",
-               background: "transparent",
-               border: "none",
-               padding: "5px",
-               margin: "0",
-               cursor: "pointer",
-               color: "#777",
-               display: "flex",
-               alignItems: "center",
-               justifyContent: "center",
-               outline: "none",
-               boxShadow: "none",
-               minWidth: "auto",
-               height: "auto"
-             }}
-           >
-            {showCurrentPassword ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            )}
-          </button>
-        </div>
-        <div style={{ position: "relative", marginBottom: "15px" }}>
-          <input 
-            type={showNewPassword ? "text" : "password"} 
-            name="new" 
-            value={passwords.new} 
-            onChange={handlePasswordChange} 
-            placeholder="New Password" 
-            style={{ width: "100%", paddingRight: "40px" }}
-          />
-          <button
-             type="button"
-             onClick={() => setShowNewPassword(!showNewPassword)}
-             style={{
-               position: "absolute",
-               right: "10px",
-               top: "50%",
-               transform: "translateY(-50%)",
-               background: "transparent",
-               border: "none",
-               padding: "5px",
-               margin: "0",
-               cursor: "pointer",
-               color: "#777",
-               display: "flex",
-               alignItems: "center",
-               justifyContent: "center",
-               outline: "none",
-               boxShadow: "none",
-               minWidth: "auto",
-               height: "auto"
-             }}
-           >
-            {showNewPassword ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            )}
-          </button>
-        </div>
-        <div style={{ position: "relative", marginBottom: "15px" }}>
-          <input 
-            type={showConfirmPassword ? "text" : "password"} 
-            name="confirm" 
-            value={passwords.confirm} 
-            onChange={handlePasswordChange} 
-            placeholder="Confirm Password" 
-            style={{ width: "100%", paddingRight: "40px" }}
-          />
-          <button
-             type="button"
-             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-             style={{
-               position: "absolute",
-               right: "10px",
-               top: "50%",
-               transform: "translateY(-50%)",
-               background: "transparent",
-               border: "none",
-               padding: "5px",
-               margin: "0",
-               cursor: "pointer",
-               color: "#777",
-               display: "flex",
-               alignItems: "center",
-               justifyContent: "center",
-               outline: "none",
-               boxShadow: "none",
-               minWidth: "auto",
-               height: "auto"
-             }}
-           >
-            {showConfirmPassword ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            )}
-          </button>
-        </div>
+        <input type="password" name="current" value={passwords.current} onChange={handlePasswordChange} placeholder="Current Password" />
+        <input type="password" name="new" value={passwords.new} onChange={handlePasswordChange} placeholder="New Password" />
+        <input type="password" name="confirm" value={passwords.confirm} onChange={handlePasswordChange} placeholder="Confirm Password" />
         <button onClick={changePassword} className="btn-primary">Update Password</button>
       </section>
 
