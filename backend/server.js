@@ -95,7 +95,7 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     host: 'smtp.gmail.com',
     port: 465,
     secure: true,
-    family: 4,
+    family: 4, // Force IPv4
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
@@ -104,15 +104,17 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       rejectUnauthorized: false,
       servername: 'smtp.gmail.com'
     },
-    connectionTimeout: 10000,
-    socketTimeout: 10000,
-    greetingTimeout: 10000
+    connectionTimeout: 20000, // Increased timeout
+    socketTimeout: 20000,
+    greetingTimeout: 20000
   });
 
-  // Verify connection on startup but don't let it crash the app
-  transporter.verify().catch(err => {
+  // Verify connection on startup
+  transporter.verify().then(() => {
+    console.log("SMTP Server is ready to take messages");
+  }).catch(err => {
     console.error("SMTP PRE-VERIFICATION FAILED (Port 465):", err.message);
-    console.warn("Render may be blocking outgoing SMTP ports. Contact Render support to unblock.");
+    console.warn("If the error is ETIMEDOUT or ENETUNREACH, check your Gmail App Password and network settings.");
   });
 
   console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER + " (Port 465 + IPv4 Force)");
@@ -145,12 +147,10 @@ async function sendOtpEmail(email, otp, purpose) {
     console.log(`Sent Real Email OTP to ${email}`);
   } catch (err) {
     console.error("Failed sending email: ", err);
-    // Log the error but don't crash/throw if we've already logged the OTP to console
-    console.warn("Email delivery failed, but OTP was logged to console. User can still proceed if they have access to logs.");
     
     // We only throw if it's critical, but for now let's keep it throwing to notify the UI
     // however, we'll make the error message more helpful.
-    throw new Error(`Email delivery failed (Port Blocked?). Check server logs for your OTP code: ${otp}`);
+    throw new Error(`Email delivery failed. Please check server logs for your OTP code or check your App Password.`);
   }
 }
 
