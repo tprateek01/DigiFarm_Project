@@ -26,7 +26,7 @@ if (dns.setDefaultResultOrder) {
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const nodemailer = require("nodemailer");
+const Brevo = require("sib-api-v3-sdk");
 const passport = require("passport");
 const session = require("express-session");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
@@ -38,8 +38,8 @@ console.log("Checking Environment Variables...");
 console.log("- MONGODB_URI:", process.env.MONGODB_URI ? "Found" : "Missing");
 console.log("- RAZORPAY_KEY_ID:", process.env.RAZORPAY_KEY_ID ? `Found (${process.env.RAZORPAY_KEY_ID})` : "Missing");
 console.log("- RAZORPAY_KEY_SECRET:", process.env.RAZORPAY_KEY_SECRET ? "Found" : "Missing");
-console.log("- SMTP_USER:", process.env.SMTP_USER ? "Found" : "Missing");
-console.log("- SMTP_PASS:", process.env.SMTP_PASS ? "Found" : "Missing");
+console.log("- BREVO_API_KEY:", process.env.BREVO_API_KEY ? "Found" : "Missing");
+console.log("- BREVO_SENDER_EMAIL:", process.env.BREVO_SENDER_EMAIL ? `Found (${process.env.BREVO_SENDER_EMAIL})` : "Missing");
 console.log("- GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "Found" : "Missing");
 
 let razorpay;
@@ -103,65 +103,44 @@ mongoose.connect(mongoURI)
   .then(() => console.log('Connected to MongoDB via server.js'))
   .catch(err => console.error('MongoDB connection error', err));
 
-// Nodemailer Real Setup
-// Nodemailer Real Setup (Restored from working old version)
-// Nodemailer Real Setup (Optimized for Render/Gmail)
-// Nodemailer Real Setup (Fixed for Cloud/Render Environments)
-// Nodemailer Real Setup (Fixed for Render Network)
-// Nodemailer Real Setup (Hardcoded IPv4 Workaround for Render)
-let transporter;
-if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-  transporter = nodemailer.createTransport({
-    // Direct IPv4 address for smtp.gmail.com to bypass DNS/IPv6 issues
-    host: '142.250.114.108', 
-    port: 465,
-    secure: true, // Use SSL
-    auth: {
-      user: process.env.SMTP_USER,
-      // Ensure the App Password is clean of any accidental whitespace
-      pass: process.env.SMTP_PASS.replace(/\s/g, "") 
-    },
-    tls: {
-      // servername is REQUIRED when using an IP address with SSL
-      servername: 'smtp.gmail.com', 
-      rejectUnauthorized: false
-    },
-    connectionTimeout: 15000, // 15 seconds
-    greetingTimeout: 15000,
-    socketTimeout: 15000
-  });
-
-  // Verify connection on startup
-  transporter.verify().then(() => {
-    console.log("✅ SMTP Server is ready (Hardcoded IPv4)");
-  }).catch(err => {
-    console.error("❌ SMTP PRE-VERIFICATION FAILED (IPv4):", err.message);
-    console.warn("If this times out, Render's firewall is blocking all SMTP traffic.");
-  });
-
-  console.log("Real SMTP Nodemailer configured with: " + process.env.SMTP_USER);
+// Brevo setup
+let apiInstance = null;
+if (process.env.BREVO_API_KEY) {
+  const defaultClient = Brevo.ApiClient.instance;
+  const apiKey = defaultClient.authentications['api-key'];
+  apiKey.apiKey = process.env.BREVO_API_KEY;
+  apiInstance = new Brevo.TransactionalEmailsApi();
+  console.log("Brevo SDK configured (sib-api-v3-sdk)");
 } else {
-  console.log("SMTP_USER and SMTP_PASS not found in .env.");
-  transporter = null;
+  console.log("BREVO_API_KEY not found in .env. Falling back to console logging.");
 }
 
 async function sendOtpEmail(email, otp, purpose) {
-  if (!transporter) {
-    // Log for local development if transporter is null
-    console.log(`[LOCAL OTP] Email: ${email}, OTP: ${otp}`);
+  // Always log the OTP to the console first as a fail-safe
+  console.log(`\n-----------------------------------------`);
+  console.log(`[FAIL-SAFE OTP LOG]`);
+  console.log(`Email: ${email}`);
+  console.log(`Purpose: ${purpose}`);
+  console.log(`OTP Code: ${otp}`);
+  console.log(`-----------------------------------------\n`);
+
+  if (!apiInstance) {
+    console.warn("BREVO NOT CONFIGURED. Use the code from the console above.");
     return;
   }
+
   try {
-    await transporter.sendMail({
-      from: `"DigiFarm" <${process.env.SMTP_USER}>`, // Use authenticated user here
-      to: email,
-      subject: `DigiFarm ${purpose} OTP`,
-      text: `Your OTP for ${purpose} is: ${otp}. It expires in 10 minutes.`,
-    });
-    console.log(`Sent Real Email OTP to ${email}`);
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
+    sendSmtpEmail.subject = `DigiFarm ${purpose} OTP`;
+    sendSmtpEmail.htmlContent = `<html><body><p>Your OTP for ${purpose} is: <strong>${otp}</strong>. It expires in 10 minutes.</p></body></html>`;
+    sendSmtpEmail.sender = { "name": "DigiFarm", "email": process.env.BREVO_SENDER_EMAIL || "no-reply@digifarm.com" };
+    sendSmtpEmail.to = [{ "email": email }];
+
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log(`Sent Real Email OTP via Brevo to ${email}`);
   } catch (err) {
-    console.error("Failed sending email: ", err);
-    throw new Error("Failed to dispatch email. Check logs or verify App Password.");
+    console.error("Failed sending email via Brevo: ", err.response ? err.response.body : err);
+    throw new Error(`Email delivery failed. Please check server logs for your OTP code.`);
   }
 }
 
