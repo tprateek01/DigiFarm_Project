@@ -117,27 +117,33 @@ export default function ForgotPassword() {
             setOtpToken("");
             setOtp("");
           }}
+          disabled={!!otpToken}
         />
       </div>
 
-      <button type="button" onClick={requestOtp} disabled={loading} style={{ width: "100%", marginBottom: "15px" }}>
-        {otpRequested ? "Resend OTP" : "Send OTP"}
-      </button>
+      {!otpToken && (
+        <button type="button" onClick={requestOtp} disabled={loading} style={{ width: "100%", marginBottom: "15px" }}>
+          {otpRequested ? "Resend OTP" : "Send OTP"}
+        </button>
+      )}
 
       {otpRequested && (
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="Enter 6-digit OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-          />
-          <button type="button" onClick={verifyOtp} disabled={loading}>
-            Verify
-          </button>
-          {otpToken && (
-            <span style={{ color: "green", alignSelf: "center" }}>Verified</span>
+          {!otpToken ? (
+            <>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="Enter 6-digit OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+              />
+              <button type="button" onClick={verifyOtp} disabled={loading}>
+                Verify
+              </button>
+            </>
+          ) : (
+            <span style={{ color: "green", alignSelf: "center", fontWeight: "bold" }}>Verified ✓</span>
           )}
         </div>
       )}

@@ -309,32 +309,38 @@ const MerchantRegister = () => {
               }}
               ref={inputEmailRef}
               style={{ flex: 1 }}
+              disabled={otpVerified}
             />
-            <button
-              type="button"
-              onClick={requestOtp}
-              disabled={otpLoading}
-              style={{ whiteSpace: "nowrap", marginTop: 0 }}
-            >
-              {otpRequested ? "Resend OTP" : "Send OTP"}
-            </button>
+            {!otpVerified && (
+              <button
+                type="button"
+                onClick={requestOtp}
+                disabled={otpLoading}
+                style={{ whiteSpace: "nowrap", marginTop: 0 }}
+              >
+                {otpRequested ? "Resend OTP" : "Send OTP"}
+              </button>
+            )}
           </div>
           <span ref={errorEmailRef}></span>
           {otpRequested && (
             <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-              <input
-                type="text"
-                inputMode="numeric"
-                placeholder="Enter 6-digit OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-              />
-              <button type="button" onClick={verifyOtp} disabled={otpLoading} style={{ marginTop: 0 }}>
-                Verify
-              </button>
-              {otpVerified && (
-                <span style={{ color: "green", alignSelf: "center" }}>
-                  Verified
+              {!otpVerified ? (
+                <>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Enter 6-digit OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                  <button type="button" onClick={verifyOtp} disabled={otpLoading} style={{ marginTop: 0 }}>
+                    Verify
+                  </button>
+                </>
+              ) : (
+                <span style={{ color: "green", alignSelf: "center", fontWeight: "bold" }}>
+                  Verified ✓
                 </span>
               )}
             </div>
